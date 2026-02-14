@@ -62,13 +62,13 @@
         }
 
         header {
-            padding: 3.5rem 2rem;
+            padding: 4.5rem 2rem;
             text-align: center;
             background: radial-gradient(circle at top, var(--aurora-2), transparent 70%);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 1.5rem;
+            gap: 2rem;
             position: relative;
             overflow: hidden;
         }
@@ -84,8 +84,10 @@
         }
 
         .club-logo {
-            width: 120px;
-            height: 120px;
+            width: 220px;
+            height: 220px;
+            margin-top: -20px;
+            margin-bottom: -10px;
             object-fit: contain;
             filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.4));
             border-radius: 50%;
@@ -230,7 +232,7 @@
             }
 
             header {
-                padding: 2.5rem 1rem;
+                padding: 4rem 1rem 3rem 1rem;
             }
 
             header h1 {
@@ -492,8 +494,8 @@
         }
 
         .landing-logo {
-            width: 180px;
-            height: 180px;
+            width: 350px;
+            height: 350px;
             margin-bottom: 2.5rem;
             filter: drop-shadow(0 0 30px rgba(16, 185, 129, 0.3));
             border-radius: 50%;
@@ -671,13 +673,22 @@
         .runner-card-name {
             font-weight: 800;
             color: #ef4444;
-            /* Rojo como en la imagen */
-            font-size: 0.9rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 0.1rem;
+            /* Rojo para el nombre */
+            font-size: 0.95rem;
             text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .runner-card-rank {
+            color: #fbbf24;
+            /* Amarillo Oro */
+            font-size: 1.2rem;
+            font-weight: 900;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
         }
 
         .runner-card-stats {
@@ -947,7 +958,7 @@
                     🕒 Otras Temporadas
                 </button>
             </div>
-            <img src="aRCHIVOS/logo-club.jpeg" alt="Logo C.A Running Castelló" class="club-logo"
+            <img src="aRCHIVOS/logo-club.png" alt="Logo C.A Running Castelló" class="club-logo"
                 onerror="this.src='https://via.placeholder.com/120?text=Logo+Running+Castello'">
             <h1>C.A Running Castelló</h1>
         </header>
@@ -1191,11 +1202,6 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             // Register Service Worker for PWA
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Service Worker registrado correctamente', reg))
-                    .catch(err => console.warn('Error al registrar Service Worker', err));
-            }
 
             const fileInputLanding = document.getElementById('file-input-landing');
             const landingScreen = document.getElementById('landing-screen');
@@ -2293,16 +2299,24 @@
                     runnersInfo.push({ name, totalKm, gender, raceCount });
                 });
 
+                // Get full ranking to find positions
+                applyBonusPoints(data, true);
+                const fullRanking = calcRank(data, true);
+
                 runnerButtonsContainer.innerHTML = runnersInfo.map(info => {
                     const avatar = info.gender === 'female' ? '🏃‍♀️' : '🏃';
                     const nameParts = info.name.split(' ');
                     const displayName = nameParts.length > 1 ? `${nameParts[0]} ${nameParts[1]}` : nameParts[0];
+                    const rankPos = fullRanking.findIndex(r => r.name === info.name) + 1;
+
                     return `
                         <div class="runner-card" data-name="${info.name}" onclick="updateRunnerStats('${info.name}')">
                             <div class="runner-avatar">${avatar}</div>
                             <div class="runner-card-info">
-                                <div class="runner-card-name">${displayName}</div>
-                                <div style="font-size: 0.65rem; color: var(--text-muted);">${info.name}</div>
+                                <div class="runner-card-name">
+                                    <span>${displayName}</span>
+                                    <span class="runner-card-rank">#${rankPos}</span>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -2934,7 +2948,18 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker registrado con éxito'))
+                    .then(reg => {
+                        console.log('Service Worker: Registrado');
+                        // If there is an update, force activation
+                        reg.onupdatefound = () => {
+                            const newWorker = reg.installing;
+                            newWorker.onstatechange = () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    window.location.reload();
+                                }
+                            };
+                        };
+                    })
                     .catch(err => console.log('Error al registrar Service Worker:', err));
             });
         }
