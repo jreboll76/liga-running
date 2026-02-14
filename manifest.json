@@ -1,0 +1,21 @@
+{
+  "name": "Liga Interna Running Castelló",
+  "short_name": "Liga Running",
+  "description": "Gestión de Liga Interna y Calendario de Eventos para C.A Running Castelló",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#021a15",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "aRCHIVOS/descarga.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "aRCHIVOS/descarga.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}

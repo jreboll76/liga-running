@@ -1,0 +1,2931 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liga Interna Running Castelló</title>
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#10b981">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Liga Running">
+    <link rel="apple-touch-icon" href="aRCHIVOS/descarga.jpeg">
+
+    <!-- WhatsApp / Social Media Preview (Open Graph) -->
+    <meta property="og:title" content="Liga Interna Running Castelló">
+    <meta property="og:description"
+        content="Resultados, Rankings y Calendario de la Liga Interna del C.A Running Castelló.">
+    <meta property="og:image" content="aRCHIVOS/descarga.jpeg">
+    <meta property="og:url" content="./index.html">
+    <meta property="og:type" content="website">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #10b981;
+            /* Emerald */
+            --primary-dark: #059669;
+            --secondary: #34d399;
+            /* Emerald Light instead of Indigo */
+            --accent: #f59e0b;
+            /* Sunset Orange */
+            --bg: #021a15;
+            --card-bg: #0b120e;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass: rgba(5, 15, 12, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --aurora-1: rgba(16, 185, 129, 0.2);
+            --aurora-2: rgba(52, 211, 153, 0.2);
+            --aurora-3: rgba(245, 158, 11, 0.1);
+            --runner-gradient-red: linear-gradient(135deg, #ef4444 0%, #991b1b 100%);
+            --runner-gradient-gold: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            --runner-gradient-emerald: linear-gradient(135deg, #10b981 0%, #064e3b 100%);
+            --premium-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #064e3b 0%, #021a15 100%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: auto;
+        }
+
+        header {
+            padding: 3.5rem 2rem;
+            text-align: center;
+            background: radial-gradient(circle at top, var(--aurora-2), transparent 70%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--primary), var(--secondary), transparent);
+        }
+
+        .club-logo {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.4));
+            border-radius: 50%;
+            background: transparent;
+            padding: 4px;
+            border: 2px solid var(--primary);
+            transition: transform 0.3s ease;
+        }
+
+        .club-logo:hover {
+            transform: scale(1.05) rotate(3deg);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 3.2rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            background: linear-gradient(135deg, #10b981 0%, #6366f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+        }
+
+        /* Tabs Styling */
+        .tabs-nav {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 0 2rem;
+        }
+
+        .tab-btn {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            padding: 0.85rem 2rem;
+            border-radius: 1.25rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.95rem;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: -1;
+        }
+
+        .tab-btn.active {
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.3);
+        }
+
+        .tab-btn.active::after {
+            opacity: 1;
+        }
+
+        .tab-btn:hover:not(.active) {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 0 1rem 2rem 1rem;
+            }
+
+            .tabs-nav {
+                justify-content: flex-start;
+                overflow-x: auto;
+                white-space: nowrap;
+                padding: 0.5rem 1rem;
+                gap: 0.5rem;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                /* Hide scrollbar for Firefox */
+                margin-bottom: 1.5rem;
+            }
+
+            .tabs-nav::-webkit-scrollbar {
+                display: none;
+                /* Hide scrollbar for Chrome/Safari */
+            }
+
+            .tab-btn {
+                padding: 0.6rem 1.25rem;
+                font-size: 0.85rem;
+                flex: 0 0 auto;
+            }
+
+            header {
+                padding: 2.5rem 1rem;
+            }
+
+            header h1 {
+                font-size: 2.2rem;
+            }
+
+            .landing-title {
+                font-size: 2.2rem;
+            }
+
+            .runner-card-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .runner-avatar {
+                width: 60px;
+                height: 60px;
+                font-size: 1.8rem;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(12px);
+        }
+
+
+        .upload-section {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding: 3rem;
+            background: var(--glass);
+            border: 2px dashed var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .custom-file-upload {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .custom-file-upload:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Calendar Styling */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-btn {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .month-year {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+        }
+
+        .day-name {
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            padding-bottom: 0.5rem;
+        }
+
+        .day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            font-size: 0.95rem;
+        }
+
+        .day:not(.empty):hover {
+            background: var(--glass);
+        }
+
+        .day.today {
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .day.selected {
+            background: var(--primary) !important;
+            color: white;
+        }
+
+        .day.has-event::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
+        .day.empty {
+            cursor: default;
+        }
+
+        /* Details Panel */
+        .details-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .details-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .event-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
+            padding: 1rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .table-container table tr,
+        .table-container table td {
+            overflow: visible !important;
+            position: relative;
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 0.5rem;
+            border-radius: 0.5rem;
+            padding-bottom: 20px;
+            /* Space for tooltips at the last row */
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .event-card h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1rem;
+            color: var(--primary);
+        }
+
+        .event-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .label {
+            font-weight: 600;
+            color: var(--accent);
+            margin-right: 0.5rem;
+        }
+
+        /* Landing Page Styles */
+        #landing-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 20% 20%, var(--aurora-1), transparent 40%),
+                radial-gradient(circle at 80% 80%, var(--aurora-2), transparent 40%),
+                var(--bg);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        #dashboard-screen {
+            display: none;
+            /* Hidden until file upload */
+        }
+
+        .landing-card {
+            background: rgba(15, 28, 20, 0.4);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 2.5rem;
+            padding: 4rem 3rem;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.8);
+            animation: fadeIn 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+            position: relative;
+        }
+
+        .landing-logo {
+            width: 180px;
+            height: 180px;
+            margin-bottom: 2.5rem;
+            filter: drop-shadow(0 0 30px rgba(16, 185, 129, 0.3));
+            border-radius: 50%;
+            background: transparent;
+            border: 3px solid var(--primary);
+            padding: 6px;
+        }
+
+        .landing-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #10b981 0%, #6366f1 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+        }
+
+        .landing-subtitle {
+            color: var(--text-muted);
+            margin-bottom: 3.5rem;
+            font-size: 1.25rem;
+            font-weight: 300;
+        }
+
+        .upload-btn-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .btn-upload {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1.25rem 3.5rem;
+            border-radius: 1.25rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: none;
+            box-shadow: 0 15px 35px -10px rgba(16, 185, 129, 0.5);
+            display: inline-block;
+        }
+
+        .btn-upload:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 25px 50px -15px rgba(99, 102, 241, 0.6);
+        }
+
+        #file-input-landing {
+            display: none;
+        }
+
+        .no-data {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+            font-style: italic;
+        }
+
+        /* Tooltip styles */
+        .runner-name {
+            position: relative;
+            cursor: help;
+            border-bottom: 1px dotted var(--primary);
+            display: inline-block;
+        }
+
+        .runner-tooltip {
+            visibility: hidden;
+            width: 300px;
+            background-color: #061109;
+            color: var(--text-main);
+            text-align: left;
+            border: 1px solid var(--primary);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            position: absolute;
+            z-index: 99999;
+            top: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%) translateY(-10px);
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            font-size: 0.9rem;
+            font-weight: normal;
+            pointer-events: none;
+            border-top: 4px solid var(--primary);
+        }
+
+        .runner-name:hover .runner-tooltip {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .tooltip-race-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.4rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 0.4rem;
+        }
+
+        #file-info {
+            font-size: 0.875rem;
+            color: var(--accent);
+            margin-top: 0.5rem;
+        }
+
+        /* Runner Selection Cards */
+        .runner-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 1.5rem;
+            border: 1px solid var(--glass-border);
+            justify-content: center;
+        }
+
+        .runner-card {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            position: relative;
+        }
+
+        .runner-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .runner-card.active {
+            transform: scale(1.1);
+        }
+
+        .runner-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            border: 3px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .runner-card.active .runner-avatar {
+            border-color: var(--primary);
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .runner-card-info {
+            text-align: center;
+            width: 100%;
+        }
+
+        .runner-card-name {
+            font-weight: 800;
+            color: #ef4444;
+            /* Rojo como en la imagen */
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.1rem;
+            text-transform: uppercase;
+        }
+
+        .runner-card-stats {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .km-badge-small {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 2rem;
+            padding: 2.5rem;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 1rem;
+        }
+
+        /* Premium Runner Profile Styles */
+        .runner-hero {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(99, 102, 241, 0.1));
+            border-radius: 2rem;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+            animation: slideInUp 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .ranking-badge-hero {
+            background: rgba(251, 191, 36, 0.1);
+            border: 2px solid var(--accent);
+            padding: 0.5rem 1.5rem;
+            border-radius: 1rem;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .ranking-badge-hero .rank-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .ranking-badge-hero .rank-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--accent);
+            text-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+            line-height: 1;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .runner-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .runner-name-hero {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin: 0;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: -0.05em;
+            position: relative;
+            z-index: 1;
+        }
+
+        .glass-card-premium {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--premium-shadow);
+        }
+
+        .glass-card-premium:hover {
+            transform: translateY(-8px);
+            border-color: rgba(16, 185, 129, 0.3);
+            background: rgba(15, 23, 42, 0.6);
+        }
+
+        .stat-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            border: 1px solid var(--glass-border);
+        }
+
+        /* Meter styles */
+        .consistency-meter {
+            height: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .consistency-fill {
+            height: 100%;
+            background: var(--runner-gradient-emerald);
+            border-radius: 6px;
+            transition: width 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeInUp {
+            animation: fadeInUp 0.6s ease-out both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Landing Screen -->
+    <div id="landing-screen">
+        <div class="landing-card">
+            <img src="aRCHIVOS/descarga.jpeg" alt="Logo" class="landing-logo"
+                onerror="this.src='https://via.placeholder.com/180?text=Logo+Running+Castello'">
+            <h1 class="landing-title">C.A Running Castelló</h1>
+            <p class="landing-subtitle">Gestión de Liga Interna y Calendario de Eventos</p>
+
+            <div class="upload-btn-wrapper">
+                <label for="file-input-landing" class="btn-upload">
+                    📊 Seleccionar Archivo Excel
+                </label>
+                <input type="file" id="file-input-landing" accept=".xlsx, .xls">
+            </div>
+
+            <div class="cloud-load-wrapper" style="margin-top: 1.5rem;">
+                <button class="btn-upload"
+                    style="background: linear-gradient(135deg, #4285F4, #34A853); box-shadow: 0 10px 20px rgba(66, 133, 244, 0.2); border: none;"
+                    onclick="loadFromGoogleSheets()">
+                    ☁️ Obtener Datos Online (Google Sheets)
+                </button>
+            </div>
+
+            <p style="margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted); opacity: 0.6;">Sube tu Excel o
+                sincroniza directamente desde la nube.</p>
+        </div>
+    </div>
+
+
+    <!-- Dashboard Screen -->
+    <div id="dashboard-screen">
+        <header>
+            <div style="position: absolute; top: 1rem; right: 2rem; display: flex; gap: 1rem; align-items: center;">
+                <button class="tab-btn"
+                    style="background: linear-gradient(135deg, var(--secondary), var(--primary)); color: white; border: none; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);"
+                    onclick="switchTab('semanales', event)">
+                    📨 Enviar Resultado
+                </button>
+                <button class="tab-btn"
+                    style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: var(--accent); font-weight: 700; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease; backdrop-filter: blur(5px);"
+                    onclick="showHistoricalSeasons()">
+                    🕒 Otras Temporadas
+                </button>
+            </div>
+            <img src="aRCHIVOS/descarga.jpeg" alt="Logo C.A Running Castelló" class="club-logo"
+                onerror="this.src='https://via.placeholder.com/120?text=Logo+Running+Castello'">
+            <h1>C.A Running Castelló</h1>
+        </header>
+
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchTab('calendario', event)">Calendario</button>
+            <button class="tab-btn" onclick="switchTab('clasificacion', event)">🏆 Clasificación</button>
+            <button class="tab-btn" onclick="switchTab('carreras', event)">🏁 Carreras</button>
+            <button class="tab-btn" onclick="switchTab('corredores', event)">👤 Corredores</button>
+            <button class="tab-btn" onclick="switchTab('generales', event)">Datos Generales</button>
+            <button class="tab-btn" onclick="switchTab('asfalto', event)">Asfalto</button>
+            <button class="tab-btn" onclick="switchTab('trail', event)">Trail</button>
+            <button class="tab-btn" onclick="switchTab('podiums', event)">🏅 Podiums</button>
+        </div>
+
+        <div id="calendario" class="tab-content active">
+            <div class="container">
+                <div class="card calendar-container">
+                    <div class="calendar-header">
+                        <button class="nav-btn" onclick="prevMonth()">←</button>
+                        <div id="current-month" class="month-year"></div>
+                        <button class="nav-btn" onclick="nextMonth()">→</button>
+                    </div>
+                    <div class="calendar-grid" id="calendar-grid">
+                        <!-- Days will be injected here -->
+                    </div>
+                </div>
+
+                <div class="card details-panel">
+                    <div class="details-title" id="selected-date-title">Detalles del Día</div>
+                    <div id="event-list">
+                        <div class="no-data">Selecciona un día para ver los eventos o sube un archivo.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="clasificacion" class="tab-content">
+            <div class="card"
+                style="margin-bottom: 2rem; border-color: var(--primary); background: rgba(99, 102, 241, 0.05);">
+                <div
+                    style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                    <div class="details-title" style="margin-bottom: 0;">📅 Filtrar por Mes</div>
+                    <select id="rank-month-select" class="tab-btn"
+                        style="background: var(--card-bg); color: var(--text-main); outline: none; border: 1px solid var(--primary);"
+                        onchange="updateMonthlyRankings()">
+                        <option value="all">📅 Todo el año</option>
+                        <option value="0">Enero</option>
+                        <option value="1">Febrero</option>
+                        <option value="2">Marzo</option>
+                        <option value="3">Abril</option>
+                        <option value="4">Mayo</option>
+                        <option value="5">Junio</option>
+                        <option value="6">Julio</option>
+                        <option value="7">Agosto</option>
+                        <option value="8">Septiembre</option>
+                        <option value="9">Octubre</option>
+                        <option value="10">Noviembre</option>
+                        <option value="11">Diciembre</option>
+                    </select>
+
+                    <select id="rank-gender-select" class="tab-btn"
+                        style="background: var(--card-bg); color: var(--text-main); outline: none; border: 1px solid var(--primary);"
+                        onchange="updateMonthlyRankings()">
+                        <option value="all">👥 Todos los sexos</option>
+                        <option value="H">♂️ Masculino</option>
+                        <option value="M">♀️ Femenino</option>
+                    </select>
+
+                    <button class="tab-btn"
+                        style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);"
+                        onclick="generateHDPoster('clasificacion')">
+                        🎨 Generar JPG HD (Poster)
+                    </button>
+
+                    <button id="bonus-toggle-btn" class="tab-btn"
+                        style="background: var(--card-bg); border: 2px solid var(--accent); color: var(--accent); font-weight: 700;"
+                        onclick="toggleBonusMode()">
+                        🏆 Activar Bonus Puntos
+                    </button>
+                </div>
+            </div>
+            <div class="container" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div class="card"
+                    style="border-color: var(--primary); background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(52, 211, 153, 0.05));">
+                    <div class="details-title"
+                        style="color: var(--primary); display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 1.4rem; text-shadow: 0 0 10px rgba(16, 185, 129, 0.2);">
+                        <span>🥇 GENERAL</span>
+                        <span id="general-period-label"
+                            style="font-size: 0.8rem; opacity: 0.7; font-weight: 500;">(Total)</span>
+                    </div>
+                    <div id="ranking-general-list" class="table-container">
+                        <div class="no-data">Sube un archivo para ver la clasificación general absoluta.</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="details-title"
+                        style="color: #ef4444; display: flex; align-items: center; gap: 0.5rem; text-shadow: 0 0 10px rgba(239, 68, 68, 0.2);">
+                        <span>🏆 Ranking Asfalto</span>
+                        <span id="asfalto-period-label" style="font-size: 0.8rem; opacity: 0.7;">(Total)</span>
+                    </div>
+                    <div id="ranking-asfalto-list" class="table-container">
+                        <div class="no-data">Sube un archivo para ver el ranking.</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div id="trail-rank-title" class="details-title"
+                        style="color: #fbbf24; display: flex; align-items: center; gap: 0.5rem; text-shadow: 0 0 10px rgba(251, 191, 36, 0.2);">
+                        <span>⛰️ Ranking Trail</span>
+                        <span id="trail-period-label" style="font-size: 0.8rem; opacity: 0.7;">(Total)</span>
+                    </div>
+                    <div id="ranking-trail-list" class="table-container">
+                        <div class="no-data">Sube un archivo para ver el ranking.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="carreras" class="tab-content">
+            <div class="container" style="grid-template-columns: 1fr;">
+                <div class="card">
+                    <div class="details-title">Resultados por Carrera</div>
+                    <div id="carreras-list" class="table-container">
+                        <div class="no-data">Sube un archivo para ver los resultados agrupados.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="corredores" class="tab-content">
+            <div class="card" style="margin-bottom: 2rem;">
+                <div style="flex-direction: column; align-items: stretch; gap: 1rem;">
+                    <div class="details-title" style="margin-bottom: 0.5rem;">👤 Seleccionar Corredor</div>
+                    <div id="runner-buttons-container" class="runner-card-grid">
+                        <div class="no-data" style="padding: 1rem;">Sube un archivo para ver los corredores.</div>
+                    </div>
+                </div>
+            </div>
+            <div id="runner-stats-container">
+                <div class="no-data">Selecciona un corredor para ver sus estadísticas detalladas.</div>
+            </div>
+        </div>
+
+        <div id="semanales" class="tab-content">
+            <div class="container" style="grid-template-columns: 1fr;">
+                <div class="card"
+                    style="padding: 0; overflow: hidden; position: relative; min-height: 800px; border-color: var(--secondary);">
+                    <div
+                        style="background: linear-gradient(to right, var(--secondary), var(--primary)); padding: 1.5rem; color: white; display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="margin: 0; font-size: 1.5rem;">📨 Formulario de Resultados Semanales</h2>
+                        <button class="tab-btn"
+                            style="background: rgba(255,255,255,0.2); color: white; border: none; font-size: 0.8rem;"
+                            onclick="loadFromGoogleSheets()">
+                            🔄 Sincronizar Tras Enviar
+                        </button>
+                    </div>
+                    <iframe
+                        src="https://docs.google.com/forms/d/1Pr7U1eCzXWawVX5aMVGCFlfiv-jYsWI4LMa6HmgpO9k/viewform?embedded=true"
+                        width="100%" height="1000" frameborder="0" marginheight="0" marginwidth="0"
+                        style="border: none; background: white;"> Cargando formulario… </iframe>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="generales" class="tab-content">
+            <div class="container" style="grid-template-columns: 1fr;">
+                <div class="card">
+                    <div class="details-title">Todos los Registros</div>
+                    <div id="generales-list" class="table-container">
+                        <div class="no-data">Sube un archivo para ver los datos generales.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="asfalto" class="tab-content">
+            <div class="container" style="grid-template-columns: 1fr;">
+                <div class="card">
+                    <div class="details-title">Carreras de Asfalto</div>
+                    <div id="asfalto-list" class="table-container">
+                        <div class="no-data">Sube un archivo para ver las carreras de asfalto.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="trail" class="tab-content">
+            <div class="container" style="grid-template-columns: 1fr;">
+                <div class="card">
+                    <div class="details-title">Eventos de Trail</div>
+                    <div id="trail-list" class="table-container">
+                        <div class="no-data">Sube un archivo para ver los eventos de trail.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="podiums" class="tab-content">
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 2rem; padding: 0 2rem;">
+                <button class="tab-btn"
+                    style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);"
+                    onclick="generateHDPoster('podiums')">
+                    🎨 Generar JPG HD (Poster)
+                </button>
+            </div>
+            <div class="container" style="grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <!-- Podium cards will be injected here -->
+                <div class="no-data" style="grid-column: span 2;">Sube un archivo para ver el resumen de podiums.</div>
+            </div>
+        </div>
+    </div> <!-- Close Dashboard Screen -->
+
+    <!-- Libraries -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        let events = {};
+        let rawExcelData = [];
+        let detectedDateKey = null;
+        let detectedRaceKey = null;
+        let detectedRunnerKey = null;
+        let detectedGenderKey = null;
+        let detectedPosKey = null;
+        let currentDate = new Date();
+        let selectedDateKey = null;
+        let runnerChart = null;
+        let roadTrailChart = null;
+        let manualMappings = JSON.parse(localStorage.getItem('runnerMappings') || '{}');
+        let manualRaceMappings = JSON.parse(localStorage.getItem('raceMappings') || '{}');
+        let bonusMode = false;
+        let historicalSeasons = {}; // Store processed data for previous seasons
+
+        let calendarGrid, currentMonthDisplay, eventList, selectedDateTitle;
+
+        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        ];
+        const dayNames = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Register Service Worker for PWA
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registrado correctamente', reg))
+                    .catch(err => console.warn('Error al registrar Service Worker', err));
+            }
+
+            const fileInputLanding = document.getElementById('file-input-landing');
+            const landingScreen = document.getElementById('landing-screen');
+            const dashboardScreen = document.getElementById('dashboard-screen');
+
+            // Initialize global UI refs
+            calendarGrid = document.getElementById('calendar-grid');
+            currentMonthDisplay = document.getElementById('current-month');
+            eventList = document.getElementById('event-list');
+            selectedDateTitle = document.getElementById('selected-date-title');
+
+
+            fileInputLanding.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const loadingMsg = document.createElement('div');
+                    loadingMsg.id = 'loading-overlay';
+                    loadingMsg.style = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; z-index:9999; color:var(--primary); font-size:1.5rem; font-weight:700;';
+                    loadingMsg.innerHTML = '<div>Procesando archivo...</div>';
+                    document.body.appendChild(loadingMsg);
+
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const data = new Uint8Array(event.target.result);
+                        try {
+                            processData(data, landingScreen, dashboardScreen);
+                        } finally {
+                            const overlay = document.getElementById('loading-overlay');
+                            if (overlay) overlay.remove();
+                        }
+                    };
+                    reader.onerror = () => {
+                        alert('Error al leer el archivo');
+                        const overlay = document.getElementById('loading-overlay');
+                        if (overlay) overlay.remove();
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
+            });
+
+            renderCalendar();
+        });
+
+
+
+        function switchTab(tabId, event) {
+            // Hide all contents
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+            // Show selected tab
+            const target = document.getElementById(tabId);
+            if (target) target.classList.add('active');
+
+            // Add active class to corresponding button
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            } else if (window.event && window.event.currentTarget) {
+                window.event.currentTarget.classList.add('active');
+            }
+        }
+
+        async function loadFromGoogleSheets() {
+            const spreadsheetId = "1id85u0n11QKVzR_OJJGOjeEEmi9MOWJ6UOWqFDu6Se4";
+            // Removed gid to fetch all sheets in the workbook
+            const exportUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=xlsx`;
+
+            // Reliable proxies ordered by stability for this source
+            const proxies = [
+                (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+                (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+                (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+            ];
+
+            // Create loading overlay
+            const overlay = document.createElement('div');
+            overlay.id = 'loading-overlay-cloud';
+            overlay.style = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(5, 5, 5, 0.9); backdrop-filter:blur(10px); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:100000;';
+            overlay.innerHTML = `
+                <div style="width: 50px; height: 50px; border: 3px solid rgba(16, 185, 129, 0.1); border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1.5rem;"></div>
+                <div style="color: white; font-size: 1.2rem; font-weight: 600; letter-spacing: 0.05em;">SINCRONIZANDO CON LA NUBE...</div>
+                <div style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem;">Buscando el túnel de datos más rápido</div>
+                <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+            `;
+            document.body.appendChild(overlay);
+
+            async function tryFetch(url) {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.arrayBuffer();
+            }
+
+            try {
+                let arrayBuffer = null;
+                let lastError = null;
+
+                // Try direct fetch first (will likely fail CORS but good practice)
+                try {
+                    console.log("Intentando descarga directa...");
+                    arrayBuffer = await tryFetch(exportUrl);
+                } catch (e) {
+                    lastError = e;
+                    // Try sequentially through proxies
+                    for (const proxyFn of proxies) {
+                        const proxyUrl = proxyFn(exportUrl);
+                        console.log(`Intentando via proxy: ${proxyUrl.split('?')[0]}`);
+                        try {
+                            arrayBuffer = await tryFetch(proxyUrl);
+                            if (arrayBuffer) break;
+                        } catch (proxyErr) {
+                            console.warn(`Proxy fallido:`, proxyErr.message);
+                            lastError = proxyErr;
+                        }
+                    }
+                }
+
+                if (!arrayBuffer) {
+                    throw new Error(`No se pudo conectar con ningún servidor de datos. ${lastError ? lastError.message : ''}`);
+                }
+
+                const data = new Uint8Array(arrayBuffer);
+                const ls = document.getElementById('landing-screen');
+                const ds = document.getElementById('dashboard-screen');
+
+                processData(data, ls, ds);
+            } catch (error) {
+                console.error('Error loading Google Sheets:', error);
+                alert(`ERROR DE CONEXIÓN:\n\n${error.message}\n\nPor favor, verifica que el documento de Google Sheets sea público e inténtalo de nuevo.`);
+            } finally {
+                overlay.remove();
+            }
+        }
+
+        function processData(data, landingScreen, dashboardScreen) {
+            try {
+                const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+
+                // Get first sheet
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert to JSON
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+                if (!jsonData || jsonData.length === 0) {
+                    alert('El archivo parece estar vacío o no es un formato válido.');
+                    return;
+                }
+
+                // Process other sheets for historical seasons
+                historicalSeasons = {};
+                console.log("Hojas detectadas en el libro:", workbook.SheetNames);
+                workbook.SheetNames.forEach(sheetName => {
+                    const trimmed = sheetName.trim();
+                    // Strict regex for seasons: 2022-2023, 2022/2023, 22-23, 2022 2023, etc.
+                    const isSeasonPattern = /\d{2,4}[-/\s]\d{2,4}/.test(trimmed);
+                    const isCurrent = trimmed === firstSheetName.trim();
+
+                    if (!isCurrent && isSeasonPattern) {
+                        console.log(`Procesando hoja histórica: ${sheetName}`);
+                        try {
+                            const historicalData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                            if (historicalData.length > 0) {
+                                historicalSeasons[sheetName] = processHistoricalSheet(sheetName, historicalData);
+                            }
+                        } catch (e) {
+                            console.warn(`Error procesando temporada histórica ${sheetName}:`, e);
+                        }
+                    }
+                });
+
+                // Find columns case-insensitively
+                const sampleRow = jsonData[0];
+                const columns = Object.keys(sampleRow);
+
+                const dateKey = columns.find(k => k.toLowerCase().includes('fecha del evento') || k.toLowerCase().includes('fecha')) || columns[0];
+                const raceKey = columns.find(k => k.toLowerCase().includes('nombre de la prueba') || k.toLowerCase().includes('prueba') || k.toLowerCase().includes('carrera')) || columns[1] || columns[0];
+                const runnerKey = columns.find(k =>
+                    k.toLowerCase().includes('nombre, apellidos') ||
+                    k.toLowerCase().includes('corredor') ||
+                    k.toLowerCase().includes('participante') ||
+                    (k.toLowerCase() === 'nombre' && k !== raceKey)
+                ) || columns[2] || raceKey;
+
+                detectedDateKey = dateKey;
+                detectedRaceKey = raceKey;
+                detectedRunnerKey = runnerKey;
+                detectedGenderKey = columns.find(k => k.toLowerCase().includes('sexo') || k.toLowerCase().includes('género') || k.toLowerCase().includes('genero'));
+                detectedPosKey = columns.find(k => k.toLowerCase().includes('puesto') || k.toLowerCase().includes('posicion') || k.toLowerCase().includes('posición') || k.toLowerCase().includes('general') || k.toLowerCase() === 'pos');
+                rawExcelData = jsonData;
+
+                if (!dateKey) {
+                    alert('No se encontró una columna de fecha válida.');
+                    return;
+                }
+
+                events = {}; // Reset events
+
+                // Pre-process races and runners to unify names
+                const rawRaceNames = jsonData.map(r => r[raceKey] || '').filter(n => n);
+                const rawRunnerNames = jsonData.map(r => r[runnerKey] || '').filter(n => n);
+
+                const raceMapping = unifyNames(rawRaceNames);
+                const runnerMapping = unifyRunnerNames(rawRunnerNames);
+
+                jsonData.forEach(row => {
+                    // Update the race and runner names to unified ones
+                    if (row[raceKey]) row[raceKey] = raceMapping[row[raceKey]];
+                    if (row[runnerKey]) row[runnerKey] = runnerMapping[row[runnerKey]];
+
+                    let dateStr = row[dateKey];
+                    let date;
+
+                    if (dateStr instanceof Date) {
+                        date = dateStr;
+                    } else {
+                        date = new Date(dateStr);
+                    }
+
+                    if (!isNaN(date.getTime())) {
+                        const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+                        if (!events[key]) events[key] = [];
+                        events[key].push(row);
+                    }
+                });
+
+                populateOtherTabs(jsonData);
+                renderCalendar();
+
+                if (landingScreen && dashboardScreen) {
+                    landingScreen.style.display = 'none';
+                    dashboardScreen.style.display = 'block';
+                    dashboardScreen.style.animation = 'fadeIn 0.6s ease-out';
+                }
+            } catch (err) {
+                console.error('Error parsing Excel:', err);
+                alert('Hubo un error al procesar el archivo. Asegúrate de que el formato sea correcto.');
+            }
+        }
+
+        function processHistoricalSheet(sheetName, data) {
+            const columns = Object.keys(data[0] || {});
+
+            // Re-use robust logic from processData
+            const dateKey = columns.find(k => k.toLowerCase().includes('fecha del evento') || k.toLowerCase().includes('fecha')) || columns[0];
+            const raceKey = columns.find(k => k.toLowerCase().includes('nombre de la prueba') || k.toLowerCase().includes('prueba') || k.toLowerCase().includes('carrera')) || columns[1] || columns[0];
+            const runnerKey = columns.find(k =>
+                k.toLowerCase().includes('nombre, apellidos') ||
+                k.toLowerCase().includes('corredor') ||
+                k.toLowerCase().includes('participante') ||
+                (k.toLowerCase().includes('nombre') && !k.toLowerCase().includes('prueba'))
+            ) || columns[2] || raceKey;
+
+            const genderKey = columns.find(k => k.toLowerCase().includes('sexo') || k.toLowerCase().includes('género') || k.toLowerCase().includes('genero'));
+            const posKey = columns.find(k => k.toLowerCase().includes('puesto') || k.toLowerCase().includes('posicion') || k.toLowerCase().includes('posición') || k.toLowerCase() === 'pos');
+            const distKey = columns.find(k => k.toLowerCase().includes('distancia'));
+
+            // Apply bonus (internal logic to historical data)
+            const raceGroups = {};
+            data.forEach(r => {
+                const raceName = r[raceKey] || 'Sin nombre';
+                if (!raceGroups[raceName]) raceGroups[raceName] = [];
+                raceGroups[raceName].push(r);
+            });
+
+            Object.values(raceGroups).forEach(group => {
+                const sortedGroup = group.sort((a, b) => {
+                    const posA = parseInt(String(a[posKey] || '999').match(/\d+/) || '999');
+                    const posB = parseInt(String(b[posKey] || '999').match(/\d+/) || '999');
+                    return posA - posB;
+                });
+                const N = sortedGroup.length;
+                sortedGroup.forEach((r, idx) => r._bonusPoints = N - idx);
+            });
+
+            // Calculate Rankings (Asfalto/Trail + Gender)
+            const getPodium = (typeFilter, genderFilter) => {
+                let filtered = data;
+                if (typeFilter === 'asfalto') {
+                    filtered = filtered.filter(r => (r['Tipo'] || r['Tipo de Carrera'] || '').toLowerCase().includes('asfalto'));
+                } else {
+                    filtered = filtered.filter(r => {
+                        const t = (r['Tipo'] || r['Tipo de Carrera'] || '').toLowerCase();
+                        return t.includes('trail') || t.includes('montaña');
+                    });
+                }
+
+                if (genderFilter && genderKey) {
+                    filtered = filtered.filter(r => {
+                        const g = String(r[genderKey] || '').toUpperCase();
+                        if (genderFilter === 'H') return g.startsWith('H') || g.startsWith('MASC') || g.startsWith('V');
+                        return g.startsWith('M') && !g.startsWith('MASC') || g.startsWith('FEM') || g.startsWith('F');
+                    });
+                }
+
+                const totals = {};
+                filtered.forEach(r => {
+                    const name = r[runnerKey] || 'Anónimo';
+                    const km = parseFloat(String(r[distKey] || 0).replace(',', '.')) || 0;
+                    if (!totals[name]) totals[name] = { name, totalKm: 0, totalBonus: 0 };
+                    totals[name].totalKm += km;
+                    totals[name].totalBonus += (r._bonusPoints || 0);
+                });
+
+                return Object.values(totals)
+                    .map(r => ({ ...r, totalScore: r.totalKm + r.totalBonus }))
+                    .sort((a, b) => b.totalScore - a.totalScore)
+                    .slice(0, 3);
+            };
+
+            return {
+                generalH: getPodium('all', 'H'),
+                generalF: getPodium('all', 'M'),
+                asfaltoH: getPodium('asfalto', 'H'),
+                asfaltoF: getPodium('asfalto', 'M'),
+                trailH: getPodium('trail', 'H'),
+                trailF: getPodium('trail', 'M')
+            };
+        }
+
+        function showHistoricalSeasons() {
+            const seasonNames = Object.keys(historicalSeasons);
+            if (seasonNames.length === 0) {
+                alert('No se encontraron otras temporadas en el archivo actual. Asegúrate de tener pestañas con nombres como "2022-2023".');
+                return;
+            }
+
+            // Create Modal if it doesn't exist
+            let modal = document.getElementById('historical-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'historical-modal';
+                modal.className = 'modal-overlay';
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width: 1000px; max-height: 90vh; overflow-y: auto; background: #050505;">
+                        <div class="modal-header">
+                            <h2 style="margin:0; color:var(--primary); font-size: 1.8rem;">🕒 Histórico de Temporadas</h2>
+                            <button class="nav-btn" onclick="document.getElementById('historical-modal').remove()" style="font-size: 2rem;">×</button>
+                        </div>
+                        <div id="historical-seasons-grid" style="display: grid; gap: 3rem; padding-top: 1rem;"></div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            const grid = document.getElementById('historical-seasons-grid');
+            grid.innerHTML = seasonNames.map(name => {
+                const s = historicalSeasons[name];
+                const renderRank = (title, top3, color) => `
+                    <div style="flex:1; min-width: 200px;">
+                        <h4 style="color:${color}; margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.25rem;">${title}</h4>
+                        ${top3.map((r, i) => `
+                            <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:0.25rem;">
+                                <span>${i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'} ${r.name}</span>
+                                <span style="font-weight:700; color:${color};">${r.totalScore.toFixed(1)}</span>
+                            </div>
+                        `).join('') || '<div class="no-data">N/A</div>'}
+                    </div>
+                `;
+
+                return `
+                    <div class="card" style="background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.08); padding: 2rem;">
+                        <div class="details-title" style="color: var(--primary); font-size: 1.8rem; margin-bottom: 1.5rem; text-align: center; border-bottom: 2px solid rgba(16, 185, 129, 0.2); padding-bottom: 0.5rem;">Temporada ${name}</div>
+                        
+                        <h3 style="color: var(--text-main); margin-bottom: 1rem; text-align: center; font-size: 1.2rem;">🏆 GANADORES GENERALES</h3>
+                        <div style="display:flex; flex-wrap:wrap; gap: 1.5rem; margin-bottom: 2rem; background: rgba(16, 185, 129, 0.05); padding: 1.5rem; border-radius: 1rem; border: 1px solid rgba(16, 185, 129, 0.1);">
+                            ${renderRank('Masculino General', s.generalH, 'var(--primary)')}
+                            ${renderRank('Femenino General', s.generalF, 'var(--primary)')}
+                        </div>
+
+                        <h3 style="color: var(--text-muted); margin-bottom: 1rem; text-align: center; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em;">Detalle por Modalidad</h3>
+                        <div style="display:flex; flex-wrap:wrap; gap: 1.5rem;">
+                            ${renderRank('🛣️ Asfalto Masc.', s.asfaltoH, '#ef4444')}
+                            ${renderRank('🛣️ Asfalto Fem.', s.asfaltoF, '#ef4444')}
+                            ${renderRank('⛰️ Trail Masc.', s.trailH, '#fbbf24')}
+                            ${renderRank('⛰️ Trail Fem.', s.trailF, '#fbbf24')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+
+        function toggleBonusMode() {
+            bonusMode = !bonusMode;
+            const btn = document.getElementById('bonus-toggle-btn');
+            if (bonusMode) {
+                btn.textContent = '📏 Ver Solo Kilómetros';
+                btn.style.borderColor = 'var(--primary)';
+                btn.style.color = 'var(--primary)';
+            } else {
+                btn.textContent = '🏆 Activar Bonus Puntos';
+                btn.style.borderColor = 'var(--accent)';
+                btn.style.color = 'var(--accent)';
+            }
+            updateMonthlyRankings();
+        }
+
+        function applyBonusPoints(data, force = false) {
+            // Reset bonus points first
+            data.forEach(r => r._bonusPoints = 0);
+            if (!bonusMode && !force) return;
+
+            const raceGroups = {};
+            data.forEach(r => {
+                let d = r[detectedDateKey];
+                if (!(d instanceof Date)) d = new Date(d);
+                const dStr = d.toISOString().split('T')[0];
+                const raceName = r[detectedRaceKey] || 'Sin nombre';
+                const groupKey = `${raceName}_${dStr}`;
+
+                if (!raceGroups[groupKey]) raceGroups[groupKey] = [];
+                raceGroups[groupKey].push(r);
+            });
+
+            Object.values(raceGroups).forEach(group => {
+                const sortedGroup = group.sort((a, b) => {
+                    const matchA = String(a[detectedPosKey] || '9999').match(/\d+/);
+                    const matchB = String(b[detectedPosKey] || '9999').match(/\d+/);
+                    const posA = matchA ? parseInt(matchA[0]) : 9999;
+                    const posB = matchB ? parseInt(matchB[0]) : 9999;
+                    return posA - posB;
+                });
+                const N = sortedGroup.length;
+                sortedGroup.forEach((r, idx) => {
+                    r._bonusPoints = N - idx;
+                });
+            });
+        }
+
+        function updateMonthlyRankings() {
+            if (rawExcelData.length === 0) return;
+            const monthVal = document.getElementById('rank-month-select').value;
+            const genderVal = document.getElementById('rank-gender-select').value;
+
+            let filteredData = rawExcelData;
+            const labels = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            let selectedLabel = monthVal === 'all' ? '(Total)' : `(${labels[parseInt(monthVal)]})`;
+
+            if (genderVal !== 'all') {
+                const genderLabel = genderVal === 'H' ? '♂️' : '♀️';
+                selectedLabel += ` - ${genderLabel}`;
+            }
+
+            if (bonusMode) {
+                selectedLabel += " + Bonus";
+            }
+
+            document.getElementById('general-period-label').textContent = selectedLabel;
+            document.getElementById('asfalto-period-label').textContent = selectedLabel;
+            document.getElementById('trail-period-label').textContent = selectedLabel;
+
+            // 1. Filter by Month
+            if (monthVal !== 'all') {
+                const targetMonth = parseInt(monthVal);
+                filteredData = filteredData.filter(row => {
+                    let d = row[detectedDateKey];
+                    if (!(d instanceof Date)) d = new Date(d);
+                    return d.getMonth() === targetMonth;
+                });
+            }
+
+            // 2. Calculate Bonus on the timeframe filter (Month) regardless of Gender
+            applyBonusPoints(filteredData);
+
+            // 3. Filter by Gender
+            if (genderVal !== 'all' && detectedGenderKey) {
+                filteredData = filteredData.filter(row => {
+                    const val = String(row[detectedGenderKey] || '').toUpperCase();
+                    if (genderVal === 'H') {
+                        return val.startsWith('H') || val.startsWith('MASC') || val.startsWith('V');
+                    } else {
+                        return val.startsWith('M') && !val.startsWith('MASC') || val.startsWith('FEM') || val.startsWith('F');
+                    }
+                });
+            }
+
+            refreshRankingsOnly(filteredData);
+        }
+        function refreshRankingsOnly(data) {
+            const rankingGeneral = document.getElementById('ranking-general-list');
+            const rankingAsfalto = document.getElementById('ranking-asfalto-list');
+            const rankingTrail = document.getElementById('ranking-trail-list');
+
+            const roadRaces = data.filter(r => (r['Tipo de Carrera'] || r['Tipo'] || '').toLowerCase().includes('asfalto'));
+            const trailRaces = data.filter(r => {
+                const type = (r['Tipo de Carrera'] || r['Tipo'] || '').toLowerCase();
+                return type.includes('montaña') || type.includes('trail') || type.includes('obstáculos');
+            });
+
+            rankingHelper(rankingGeneral, calcRank(data));
+            rankingHelper(rankingAsfalto, calcRank(roadRaces));
+            rankingHelper(rankingTrail, calcRank(trailRaces));
+        }
+
+        function calcRank(races, forceBonusSort = false) {
+            if (races.length === 0) return [];
+
+            // Find keys dynamically from first row
+            const sample = races[0];
+            const dKey = Object.keys(sample).find(k => k.toLowerCase().includes('distancia'));
+            const nKey = detectedRunnerKey;
+            const rKey = detectedRaceKey;
+
+            const totals = {};
+            races.forEach(r => {
+                const name = r[nKey] || 'Anónimo';
+
+                let kmRaw = r[dKey] || 0;
+                if (typeof kmRaw === 'string') kmRaw = kmRaw.replace(',', '.');
+                const km = parseFloat(kmRaw) || 0;
+
+                if (!totals[name]) {
+                    totals[name] = { totalKm: 0, totalBonus: 0, races: [] };
+                }
+
+                totals[name].totalKm += km;
+                totals[name].totalBonus += (r._bonusPoints || 0);
+
+                const raceName = r[rKey] || 'Prueba sin nombre';
+                totals[name].races.push({
+                    race: raceName,
+                    km: km,
+                    bonus: r._bonusPoints || 0
+                });
+            });
+
+            const results = Object.entries(totals).map(([name, data]) => ({
+                name,
+                totalKm: data.totalKm,
+                totalBonus: data.totalBonus,
+                totalScore: data.totalKm + data.totalBonus,
+                races: data.races
+            }));
+
+            if (bonusMode || forceBonusSort) {
+                return results.sort((a, b) => {
+                    if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
+                    return b.totalKm - a.totalKm;
+                });
+            } else {
+                return results.sort((a, b) => b.totalKm - a.totalKm);
+            }
+        }
+
+        function updateRunnerStats(selectedName) {
+            const runnerName = selectedName || '';
+            const container = document.getElementById('runner-stats-container');
+
+            // Manage active class on cards
+            document.querySelectorAll('.runner-card').forEach(card => {
+                card.classList.toggle('active', card.getAttribute('data-name') === runnerName);
+            });
+
+            if (!runnerName) {
+                container.innerHTML = '<div class="no-data">Selecciona un corredor para ver sus estadísticas detalladas.</div>';
+                return;
+            }
+
+            const runnerData = rawExcelData.filter(r => (r[detectedRunnerKey] || '') === runnerName);
+
+            let totalRoadKm = 0;
+            let totalTrailKm = 0;
+            const raceHistory = [];
+            const dKey = Object.keys(rawExcelData[0] || {}).find(k => k.toLowerCase().includes('distancia'));
+
+            // Stats for Peak Month & Consistency
+            const monthlyKm = {};
+            const monthsNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+            runnerData.forEach(r => {
+                let kmRaw = r[dKey] || 0;
+                if (typeof kmRaw === 'string') kmRaw = kmRaw.replace(',', '.');
+                const km = parseFloat(kmRaw) || 0;
+
+                const date = r[detectedDateKey] instanceof Date ? r[detectedDateKey] : new Date(r[detectedDateKey]);
+                const monthYear = `${date.getMonth()}-${date.getFullYear()}`;
+                monthlyKm[monthYear] = (monthlyKm[monthYear] || 0) + km;
+
+                const type = (r['Tipo de Carrera'] || r['Tipo'] || '').toLowerCase();
+                const isTrail = type.includes('montaña') || type.includes('trail') || type.includes('obstáculos');
+
+                if (isTrail) totalTrailKm += km;
+                else totalRoadKm += km;
+
+                const rawRace = r[detectedRaceKey] || 'Sin nombre';
+                const raceMapping = unifyNames([rawRace]);
+
+                raceHistory.push({
+                    date: date,
+                    race: raceMapping[rawRace] || rawRace,
+                    km: km,
+                    type: isTrail ? '⛰️ Trail' : '🛣️ Asfalto',
+                    bonus: r._bonusPoints || 0
+                });
+            });
+
+            // Find Peak Month
+            let peakMonthLabel = "N/A";
+            let peakMonthValue = 0;
+            Object.entries(monthlyKm).forEach(([key, val]) => {
+                if (val > peakMonthValue) {
+                    peakMonthValue = val;
+                    const [m, y] = key.split('-');
+                    peakMonthLabel = `${monthsNames[parseInt(m)]}`;
+                }
+            });
+
+            // Stats for Peak Month & Consistency
+            const activeMonths = Object.keys(monthlyKm).length;
+            const allMonthsInData = new Set(rawExcelData.map(r => {
+                const d = r[detectedDateKey] instanceof Date ? r[detectedDateKey] : new Date(r[detectedDateKey]);
+                return `${d.getMonth()}-${d.getFullYear()}`;
+            }));
+            const consistency = allMonthsInData.size > 0 ? Math.round((activeMonths / allMonthsInData.size) * 100) : 0;
+
+            // Calculate Overall Ranking Position
+            applyBonusPoints(rawExcelData, true); // Force bonus calculation for general ranking
+            const allRaces = rawExcelData;
+            const fullRanking = calcRank(allRaces, true); // Get full general ranking
+            const runnerRankPos = fullRanking.findIndex(r => r.name === runnerName) + 1;
+            const runnerPoints = (fullRanking.find(r => r.name === runnerName) || {}).totalScore || 0;
+
+            raceHistory.sort((a, b) => b.date - a.date);
+
+            container.innerHTML = `
+                <div class="runner-hero">
+                    <div class="ranking-badge-hero">
+                        <span class="rank-label">Ranking Actual</span>
+                        <span class="rank-number">#${runnerRankPos}</span>
+                        <div style="font-size: 0.7rem; color: var(--accent); font-weight: 700; margin-top: 0.25rem;">${runnerPoints.toFixed(1)} PTS</div>
+                    </div>
+                    <div class="stat-badge" style="margin-bottom: 0.5rem; background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2);">
+                        <span>🏃 Perfil de Atleta</span>
+                    </div>
+                    <h2 class="runner-name-hero">${runnerName}</h2>
+                    <div style="display: flex; justify-content: center; gap: 2rem; margin-top: 1.5rem; flex-wrap: wrap;">
+                        <div class="stat-badge">
+                            <span style="color: var(--primary);">🏁</span> ${raceHistory.length} Carreras
+                        </div>
+                        <div class="stat-badge">
+                            <span style="color: var(--accent);">🏆</span> ${activeMonths} Meses Activo
+                        </div>
+                        <div class="stat-badge">
+                             <span style="color: #6366f1;">📍</span> ${consistency}% Consistencia
+                        </div>
+                    </div>
+                </div>
+
+                <div class="container" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+                    <!-- Key Metrics Cards -->
+                    <div class="glass-card-premium animate-fadeInUp" style="animation-delay: 0.1s;">
+                        <div class="card-title" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem;">
+                            <span style="font-size: 1.5rem;">📊</span> Rendimiento Acumulado
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                            <div style="background: rgba(16, 185, 129, 0.1); padding: 1.5rem; border-radius: 1.25rem; border: 1px solid rgba(16, 185, 129, 0.2); text-align: center;">
+                                <div style="font-size: 0.8rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">KM Totales</div>
+                                <div style="font-size: 2.2rem; font-weight: 900; color: white; margin: 0.5rem 0;">${(totalRoadKm + totalTrailKm).toFixed(1)}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">${totalRoadKm.toFixed(1)} Road | ${totalTrailKm.toFixed(1)} Trail</div>
+                            </div>
+                            <div style="background: rgba(245, 158, 11, 0.1); padding: 1.5rem; border-radius: 1.25rem; border: 1px solid rgba(245, 158, 11, 0.2); text-align: center;">
+                                <div style="font-size: 0.8rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">Mes Pico</div>
+                                <div style="font-size: 1.8rem; font-weight: 900; color: white; margin: 0.5rem 0;">${peakMonthLabel}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">${peakMonthValue.toFixed(1)} km en un mes</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 2rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.5rem;">
+                                <span style="font-weight: 600; color: var(--text-main); font-size: 0.9rem;">Índice de Consistencia</span>
+                                <span style="font-size: 1.2rem; font-weight: 800; color: var(--primary);">${consistency}%</span>
+                            </div>
+                            <div class="consistency-meter">
+                                <div class="consistency-fill" style="width: 0%" id="consistency-bar"></div>
+                            </div>
+                            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Basado en la participación mensual durante la temporada.</p>
+                        </div>
+                    </div>
+
+                    <!-- Terrain Distro Chart -->
+                    <div class="glass-card-premium animate-fadeInUp" style="animation-delay: 0.2s;">
+                        <div class="card-title" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem;">
+                            <span style="font-size: 1.5rem;">🌍</span> Especialización de Terreno
+                        </div>
+                        <div style="height: 250px; position: relative;">
+                            <canvas id="roadTrailChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Evolution Chart -->
+                    <div class="glass-card-premium animate-fadeInUp" style="animation-delay: 0.3s; grid-column: span 2;">
+                        <div class="card-title" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem;">
+                            <span style="font-size: 1.5rem;">📈</span> Evolución de Rendimiento
+                        </div>
+                        <div style="height: 300px;">
+                            <canvas id="runnerChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- History Table -->
+                    <div class="glass-card-premium animate-fadeInUp" style="animation-delay: 0.4s; grid-column: span 2;">
+                        <div class="card-title" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem;">
+                            <span style="font-size: 1.5rem;">🕒</span> Historial Profesional
+                        </div>
+                        <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+                            <table style="width: 100%; border-collapse: separate; border-spacing: 0 0.5rem;">
+                                <thead>
+                                    <tr style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;">
+                                        <th style="padding: 1rem; text-align: left;">Fecha</th>
+                                        <th style="padding: 1rem; text-align: left;">Evento</th>
+                                        <th style="padding: 1rem; text-align: center;">Tipo</th>
+                                        <th style="padding: 1rem; text-align: center;">Puntos</th>
+                                        <th style="padding: 1rem; text-align: right;">Kilometraje</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${raceHistory.map(h => `
+                                        <tr style="background: rgba(255,255,255,0.02); transition: all 0.2s;">
+                                            <td style="padding: 1.25rem 1rem; border-radius: 1rem 0 0 1rem; font-weight: 500;">
+                                                ${new Date(h.date).toLocaleDateString()}
+                                            </td>
+                                            <td style="padding: 1.25rem 1rem;">
+                                                <div style="font-weight: 700; color: white;">${h.race}</div>
+                                            </td>
+                                            <td style="padding: 1.25rem 1rem; text-align: center;">
+                                                <span style="font-size: 0.8rem; padding: 0.25rem 0.75rem; border-radius: 1rem; background: rgba(255,255,255,0.05); color: var(--text-muted);">
+                                                    ${h.type}
+                                                </span>
+                                            </td>
+                                            <td style="padding: 1.25rem 1rem; text-align: center; color: var(--primary); font-weight: 800;">
+                                                ${h.bonus > 0 ? `+${h.bonus}` : '-'}
+                                            </td>
+                                            <td style="padding: 1.25rem 1rem; text-align: right; border-radius: 0 1rem 1rem 0; font-weight: 800; color: var(--accent); font-size: 1.1rem;">
+                                                ${h.km.toFixed(1)} <span style="font-size: 0.7rem; font-weight: normal; opacity: 0.6;">KM</span>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Trigger consistency bar animation
+            setTimeout(() => {
+                const bar = document.getElementById('consistency-bar');
+                if (bar) bar.style.width = consistency + '%';
+            }, 500);
+
+            // Initialize Charts
+            if (runnerChart) runnerChart.destroy();
+            if (roadTrailChart) roadTrailChart.destroy();
+
+            const ctxTimeline = document.getElementById('runnerChart').getContext('2d');
+            const timelineData = [...raceHistory].reverse();
+
+            // Create Gradient for line chart
+            const gradRed = ctxTimeline.createLinearGradient(0, 0, 0, 400);
+            gradRed.addColorStop(0, 'rgba(239, 68, 68, 0.4)');
+            gradRed.addColorStop(1, 'rgba(239, 68, 68, 0)');
+
+            runnerChart = new Chart(ctxTimeline, {
+                type: 'line',
+                data: {
+                    labels: timelineData.map(h => new Date(h.date).toLocaleDateString()),
+                    datasets: [{
+                        label: 'KM',
+                        data: timelineData.map(h => h.km),
+                        borderColor: '#ef4444',
+                        backgroundColor: gradRed,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#fff',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { size: 14, weight: 'bold' },
+                            bodyFont: { size: 13 },
+                            padding: 12,
+                            cornerRadius: 10,
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+                            ticks: { color: '#94a3b8', font: { size: 10, weight: '600' } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8', font: { size: 10, weight: '600' }, maxRotation: 45, minRotation: 45 }
+                        }
+                    }
+                }
+            });
+
+            const ctxPie = document.getElementById('roadTrailChart').getContext('2d');
+            roadTrailChart = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Road', 'Trail'],
+                    datasets: [{
+                        data: [totalRoadKm, totalTrailKm],
+                        backgroundColor: ['#ef4444', '#fbbf24'],
+                        borderWidth: 0,
+                        hoverOffset: 20
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#cbd5e1',
+                                padding: 25,
+                                font: { size: 14, weight: '700' },
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const total = context.dataset.data[0] + context.dataset.data[1];
+                                    const percent = context.raw ? Math.round((context.raw / total) * 100) : 0;
+                                    return ` ${context.label}: ${context.raw.toFixed(1)} KM (${percent}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function rankingHelper(container, rankingData) {
+            if (!container) return;
+            if (rankingData.length === 0) {
+                container.innerHTML = '<div class="no-data">No hay datos para este periodo.</div>';
+                return;
+            }
+
+            const headers = bonusMode ? `
+                <th style="padding: 1rem; font-size: 0.9rem;">Pos</th>
+                <th style="padding: 1rem; font-size: 0.9rem;">Corredor</th>
+                <th style="padding: 1rem; font-size: 0.9rem; text-align: right;">Km</th>
+                <th style="padding: 1rem; font-size: 0.9rem; text-align: right;">Bonus</th>
+                <th style="padding: 1rem; font-size: 0.9rem; text-align: right;">Total</th>
+            ` : `
+                <th style="padding: 1rem; font-size: 0.9rem;">Pos</th>
+                <th style="padding: 1rem; font-size: 0.9rem;">Corredor</th>
+                <th style="padding: 1rem; font-size: 0.9rem; text-align: right;">Km Totales</th>
+            `;
+
+            container.innerHTML = `
+                <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--primary); color: var(--text-muted); text-align: left;">
+                            ${headers}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rankingData.map((r, idx) => {
+                const raceListHtml = r.races.map(race => `
+                                <div class="tooltip-race-item">
+                                    <span>${race.race}</span>
+                                    <div style="display:flex; gap: 8px;">
+                                        <span style="color: var(--accent);">${race.km.toFixed(1)} km</span>
+                                        ${bonusMode ? `<span style="color: var(--primary); font-weight: 700;">+${race.bonus} pts</span>` : ''}
+                                    </div>
+                                </div>
+                            `).join('');
+
+                const rowContent = bonusMode ? `
+                                    <td style="padding: 1rem; font-weight: 600;">
+                                        ${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}
+                                    </td>
+                                    <td style="padding: 1rem; font-weight: 500;">
+                                        <span class="runner-name">
+                                            ${r.name}
+                                            <div class="runner-tooltip">
+                                                <div style="font-weight: 700; margin-bottom: 0.5rem; border-bottom: 1px solid var(--primary); padding-bottom: 0.25rem;">
+                                                    Desglose de puntos:
+                                                </div>
+                                                ${raceListHtml}
+                                            </div>
+                                        </span>
+                                    </td>
+                                    <td style="padding: 1rem; text-align: right; color: var(--text-muted); font-size: 0.85rem;">
+                                        ${r.totalKm.toFixed(1)}
+                                    </td>
+                                    <td style="padding: 1rem; text-align: right; color: var(--accent); font-weight: 600;">
+                                        ${r.totalBonus}
+                                    </td>
+                                    <td style="padding: 1rem; text-align: right; color: var(--primary); font-weight: 800; font-size: 1.1rem;">
+                                        ${r.totalScore.toFixed(1)}
+                                    </td>
+                ` : `
+                                    <td style="padding: 1rem; font-weight: 600;">
+                                        ${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}
+                                    </td>
+                                    <td style="padding: 1rem; font-weight: 500;">
+                                        <span class="runner-name">
+                                            ${r.name}
+                                            <div class="runner-tooltip">
+                                                <div style="font-weight: 700; margin-bottom: 0.5rem; border-bottom: 1px solid var(--primary); padding-bottom: 0.25rem;">
+                                                    Carreras realizadas:
+                                                </div>
+                                                ${raceListHtml}
+                                            </div>
+                                        </span>
+                                    </td>
+                                    <td style="padding: 1rem; text-align: right; color: var(--accent); font-weight: 700; font-size: 1.1rem;">
+                                        ${r.totalKm.toFixed(1)} <span style="font-size: 0.8rem; font-weight: normal;">km</span>
+                                    </td>
+                `;
+
+                return `
+                                <tr style="border-bottom: 1px solid var(--glass-border); background: ${idx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent'};">
+                                    ${rowContent}
+                                </tr>
+                            `;
+            }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+
+        function toTitleCase(str) {
+            if (!str) return '';
+            return str.toLowerCase().split(' ').map(word => {
+                if (word.length === 0) return '';
+                // Exceptions for Spanish names (optional, but nice)
+                const exceptions = ['de', 'del', 'la', 'los', 'y', 'e'];
+                if (exceptions.includes(word) && word !== str.toLowerCase().split(' ')[0]) {
+                    return word;
+                }
+                return word.charAt(0).toUpperCase() + word.slice(1);
+            }).join(' ');
+        }
+
+        function normalizeName(name) {
+            if (name === null || name === undefined) return '';
+            const nameStr = String(name);
+            return nameStr.toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove accents
+                .replace(/\b(202\d|19\d\d)\b/g, '') // Remove years
+                .replace(/[^a-z0-9]/g, ' ') // Only alphanumeric
+                .replace(/\s+/g, ' ') // Single spaces
+                .trim();
+        }
+
+        function unifyNames(names) {
+            const uniqueNames = [...new Set(names)].filter(n => n);
+            const mapping = { ...manualRaceMappings };
+            const canonicals = [];
+
+            // Load canonicals from manual mappings first
+            Object.values(manualRaceMappings).forEach(val => {
+                if (!canonicals.some(c => c.original === val)) {
+                    canonicals.push({ original: val, normalized: normalizeName(val) });
+                }
+            });
+
+            uniqueNames.forEach(name => {
+                if (mapping[name]) return; // Already manually mapped
+                const normalized = normalizeName(name);
+
+                // Look for an existing canonical that is very similar (for races, token similarity is better)
+                let found = canonicals.find(c => {
+                    const tokens1 = normalized.split(' ').filter(t => t.length > 2);
+                    const tokens2 = c.normalized.split(' ').filter(t => t.length > 2);
+                    if (normalized === c.normalized) return true;
+                    if (tokens1.length === 0 || tokens2.length === 0) return normalized === c.normalized;
+
+                    const common = tokens1.filter(t => tokens2.includes(t));
+                    const similarity = common.length / Math.max(tokens1.length, tokens2.length);
+                    return similarity > 0.8; // More strict for races
+                });
+
+                if (found) {
+                    mapping[name] = found.original;
+                } else {
+                    canonicals.push({ original: name, normalized: normalized });
+                    mapping[name] = name;
+                }
+            });
+
+            return mapping;
+        }
+
+        function populateOtherTabs(data) {
+            const tableHelper = (list, rows) => {
+                if (rows.length === 0) {
+                    list.innerHTML = '<div class="no-data">No se encontraron registros.</div>';
+                    return;
+                }
+
+                const allRunners = rows.map(r => r[detectedRunnerKey] || '').filter(n => n);
+                const allRaces = rows.map(r => r[detectedRaceKey] || '').filter(n => n);
+                const runnerMapping = unifyRunnerNames(allRunners);
+                const raceMapping = unifyNames(allRaces);
+
+                // Show as cards for better aesthetics in this UI
+                list.innerHTML = rows.map(row => {
+                    const rawRunner = row[detectedRunnerKey] || '';
+                    const rawRace = row[detectedRaceKey] || '';
+                    const unifiedRunner = runnerMapping[rawRunner] || rawRunner;
+                    const unifiedRace = raceMapping[rawRace] || rawRace;
+
+                    const fields = Object.entries(row)
+                        .filter(([k]) => {
+                            const key = k.toLowerCase();
+                            return !key.includes('marca temporal') &&
+                                !key.includes('mail') &&
+                                !key.includes('correo electrónico') &&
+                                k !== '__rowNum__';
+                        })
+                        .map(([k, v]) => {
+                            let keyLabel = k;
+                            let val = v instanceof Date ? v.toLocaleDateString() : v;
+
+                            // Replace values in fields too if they match original names
+                            if (k === detectedRunnerKey) val = unifiedRunner;
+                            if (k === detectedRaceKey) val = unifiedRace;
+
+                            if (k.toLowerCase().includes('distancia') && !isNaN(v)) val += ' KM';
+                            return `<div><span class="label">${keyLabel}:</span> ${val}</div>`;
+                        }).join('');
+
+                    return `
+                        <div class="event-card" style="margin-bottom: 1rem;">
+                            <h3>${unifiedRace || 'Registro'}</h3>
+                            <div class="event-meta" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem;">
+                                ${fields}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            };
+
+            const generalesList = document.getElementById('generales-list');
+            const asfaltoList = document.getElementById('asfalto-list');
+            const trailList = document.getElementById('trail-list');
+            const rankingAsfalto = document.getElementById('ranking-asfalto-list');
+            const rankingTrail = document.getElementById('ranking-trail-list');
+
+            // Fill runner cards
+            const runnerButtonsContainer = document.getElementById('runner-buttons-container');
+            if (runnerButtonsContainer) {
+                const runnersInfo = [];
+                const uniqueNames = [...new Set(data.map(r => r[detectedRunnerKey] || '').filter(n => n))].sort();
+
+                const dKey = Object.keys(data[0] || {}).find(k => k.toLowerCase().includes('distancia'));
+
+                uniqueNames.forEach(name => {
+                    const runnerData = data.filter(r => r[detectedRunnerKey] === name);
+
+                    // Total KM
+                    let totalKm = 0;
+                    runnerData.forEach(r => {
+                        let kmRaw = r[dKey] || 0;
+                        if (typeof kmRaw === 'string') kmRaw = kmRaw.replace(',', '.');
+                        totalKm += parseFloat(kmRaw) || 0;
+                    });
+
+                    // Gender detection for avatar
+                    let gender = 'runner';
+                    if (detectedGenderKey) {
+                        const firstEntry = runnerData.find(r => r[detectedGenderKey]);
+                        if (firstEntry) {
+                            const g = String(firstEntry[detectedGenderKey]).toUpperCase();
+                            if (g.startsWith('H') || g.startsWith('MASC') || g.startsWith('V')) gender = 'male';
+                            else if (g.startsWith('M') && !g.startsWith('MASC') || g.startsWith('FEM') || g.startsWith('F')) gender = 'female';
+                        }
+                    }
+
+                    const raceCount = runnerData.length;
+                    runnersInfo.push({ name, totalKm, gender, raceCount });
+                });
+
+                runnerButtonsContainer.innerHTML = runnersInfo.map(info => {
+                    const avatar = info.gender === 'female' ? '🏃‍♀️' : '🏃';
+                    const nameParts = info.name.split(' ');
+                    const displayName = nameParts.length > 1 ? `${nameParts[0]} ${nameParts[1]}` : nameParts[0];
+                    return `
+                        <div class="runner-card" data-name="${info.name}" onclick="updateRunnerStats('${info.name}')">
+                            <div class="runner-avatar">${avatar}</div>
+                            <div class="runner-card-info">
+                                <div class="runner-card-name">${displayName}</div>
+                                <div style="font-size: 0.65rem; color: var(--text-muted);">${info.name}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            tableHelper(generalesList, data);
+
+            const roadRaces = data.filter(r => (r['Tipo de Carrera'] || r['Tipo'] || '').toLowerCase().includes('asfalto'));
+            const trailRaces = data.filter(r => {
+                const type = (r['Tipo de Carrera'] || r['Tipo'] || '').toLowerCase();
+                return type.includes('montaña') || type.includes('trail') || type.includes('obstáculos');
+            });
+
+            renderGroupedRaces(asfaltoList, roadRaces);
+            renderGroupedRaces(trailList, trailRaces);
+            const carrerasList = document.getElementById('carreras-list');
+            renderGroupedRaces(carrerasList, data);
+
+            // Trigger ranking update (which now handles filters and bonus correctly)
+            updateMonthlyRankings();
+            renderPodiums(data);
+        }
+
+        function renderPodiums(data) {
+            const container = document.querySelector('#podiums .container');
+            if (!container) return;
+
+            const monthVal = document.getElementById('rank-month-select').value;
+            const genderVal = document.getElementById('rank-gender-select').value;
+
+            let filteredData = data;
+            if (monthVal !== 'all') {
+                const targetMonth = parseInt(monthVal);
+                filteredData = filteredData.filter(row => {
+                    let d = row[detectedDateKey];
+                    if (!(d instanceof Date)) d = new Date(d);
+                    return d.getMonth() === targetMonth;
+                });
+            }
+
+            applyBonusPoints(filteredData, true); // Always force bonus for Podiums as requested
+
+            const roadRaces = filteredData.filter(r => (r['Tipo de Carrera'] || r['Tipo'] || '').toLowerCase().includes('asfalto'));
+            const trailRaces = filteredData.filter(r => {
+                const type = (r['Tipo de Carrera'] || r['Tipo'] || '').toLowerCase();
+                return type.includes('montaña') || type.includes('trail') || type.includes('obstáculos');
+            });
+
+            const groups = [
+                { title: '🛣️ Asfalto Masculino', data: roadRaces, gender: 'H' },
+                { title: '🛣️ Asfalto Femenino', data: roadRaces, gender: 'M' },
+                { title: '⛰️ Trail Masculino', data: trailRaces, gender: 'H' },
+                { title: '⛰️ Trail Femenino', data: trailRaces, gender: 'M' }
+            ];
+
+            container.innerHTML = groups.map(group => {
+                let catData = group.data;
+                if (detectedGenderKey) {
+                    catData = catData.filter(row => {
+                        const val = String(row[detectedGenderKey] || '').toUpperCase();
+                        if (group.gender === 'H') {
+                            return val.startsWith('H') || val.startsWith('MASC') || val.startsWith('V');
+                        } else {
+                            return val.startsWith('M') && !val.startsWith('MASC') || val.startsWith('FEM') || val.startsWith('F');
+                        }
+                    });
+                }
+                const ranking = calcRank(catData, true).slice(0, 3); // Always force bonus sort
+                return podiumCardHelper(group.title, ranking);
+            }).join('');
+        }
+
+        function podiumCardHelper(title, top3) {
+            if (top3.length === 0) {
+                return `
+                    <div class="card" style="border-top: 4px solid var(--primary);">
+                        <div class="details-title">${title}</div>
+                        <div class="no-data">No hay datos suficientes.</div>
+                    </div>
+                `;
+            }
+
+            const medals = ['🥇', '🥈', '🥉'];
+            const colors = ['#fbbf24', '#cbd5e1', '#cd7f32']; // Gold, Silver, Bronze
+
+            const items = top3.map((r, idx) => `
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 0.75rem; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 0.5rem; transition: transform 0.2s;" onmouseover="this.style.transform='translateX(5px)'" onmouseout="this.style.transform='translateX(0)'">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span style="font-size: 1.5rem;">${medals[idx]}</span>
+                        <div style="font-weight: 600; color: var(--text-main);">${r.name}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="color: ${colors[idx]}; font-weight: 800; font-size: 1.2rem;">${r.totalScore.toFixed(1)} <span style="font-size: 0.7rem; font-weight: normal; opacity: 0.8;">pts</span></div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">${r.totalKm.toFixed(1)} km + ${r.totalBonus} b</div>
+                    </div>
+                </div>
+            `).join('');
+
+            return `
+                <div class="card" style="border-top: 44px solid ${title.includes('Asfalto') ? '#ef4444' : '#fbbf24'}; background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%);">
+                    <div class="details-title" style="margin-bottom: 1.5rem;">${title}</div>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        ${items}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderGroupedRaces(container, data) {
+            if (!container || !data || data.length === 0) {
+                if (container) container.innerHTML = '<div class="no-data">No se encontraron registros.</div>';
+                return;
+            }
+
+            const raceKey = detectedRaceKey;
+            const runnerKey = detectedRunnerKey;
+            const posKey = detectedPosKey;
+            const dateKey = detectedDateKey;
+            // Find distance key dynamically
+            const dKey = Object.keys(data[0] || {}).find(k => k.toLowerCase().includes('distancia'));
+
+            // Group by race name
+            const raceGroups = {};
+            data.forEach(row => {
+                const raceName = row[raceKey] || 'Carrera Desconocida';
+                if (!raceGroups[raceName]) {
+                    raceGroups[raceName] = {
+                        name: raceName,
+                        date: row[dateKey],
+                        participants: []
+                    };
+                }
+                raceGroups[raceName].participants.push(row);
+            });
+
+            // Sort races by date (newest first)
+            const sortedRaces = Object.values(raceGroups).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            container.innerHTML = sortedRaces.map(race => {
+                const totalParticipants = race.participants.length;
+
+                // Sort participants by position
+                const sortedParticipants = race.participants.sort((a, b) => {
+                    const vA = a[posKey];
+                    const vB = b[posKey];
+                    const posA = parseInt(vA) || (typeof vA === 'string' ? 9998 : 9999);
+                    const posB = parseInt(vB) || (typeof vB === 'string' ? 9998 : 9999);
+                    return posA - posB;
+                });
+
+                return `
+                        <div class="card" style="margin-bottom: 2rem; border-left: 5px solid var(--primary); background: rgba(255,255,255,0.01);">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                                <div>
+                                    <h3 style="color: var(--primary); margin: 0;">${race.name}</h3>
+                                    <div style="font-size: 0.85rem; color: var(--text-muted);">${new Date(race.date).toLocaleDateString()}</div>
+                                </div>
+                                <div style="background: var(--glass); padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.8rem; border: 1px solid var(--glass-border);">
+                                    <span style="color: var(--primary); font-weight: 700;">${totalParticipants}</span> Socios Participantes
+                                </div>
+                            </div>
+                            <div class="table-container">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="border-bottom: 1px solid var(--primary); color: var(--text-muted); text-align: left; font-size: 0.75rem;">
+                                            <th style="padding: 0.5rem; width: 50px;">Pos</th>
+                                            <th style="padding: 0.5rem;">Corredor</th>
+                                            <th style="padding: 0.5rem; text-align: right; width: 80px;">Km</th>
+                                            <th style="padding: 0.5rem; text-align: right; width: 80px;">Bonus</th>
+                                            ${posKey ? `<th style="padding: 0.5rem; text-align: right; width: 80px;">${posKey}</th>` : ''}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${sortedParticipants.map((p, idx) => {
+                    const unifiedRunner = p[runnerKey] || '';
+
+                    let kmRaw = p[dKey] || 0;
+                    if (typeof kmRaw === 'string') kmRaw = kmRaw.replace(',', '.');
+                    const km = parseFloat(kmRaw) || 0;
+
+                    const bonus = totalParticipants - idx;
+
+                    return `
+                                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+                                                <td style="padding: 0.75rem 0.5rem; font-weight: 700; color: var(--accent);">
+                                                    ${parseInt(p[posKey]) || p[posKey] || '-'}
+                                                </td>
+                                                <td style="padding: 0.75rem 0.5rem; font-size: 0.85rem; font-weight: 500;">${unifiedRunner}</td>
+                                                <td style="padding: 0.75rem 0.5rem; text-align: right; font-size: 0.85rem; font-weight: 600; color: var(--text-main);">${km.toFixed(1)}</td>
+                                                <td style="padding: 0.75rem 0.5rem; text-align: right; font-size: 0.9rem; font-weight: 700; color: var(--primary);">+${bonus}</td>
+                                                ${posKey ? `<td style="padding: 0.75rem 0.5rem; text-align: right; font-size: 0.8rem; opacity: 0.6;">${p[posKey]}</td>` : ''}
+                                            </tr>
+                                        `;
+                }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+            }).join('');
+        }
+
+        function unifyRunnerNames(names) {
+            const uniqueNames = [...new Set(names)].filter(n => n);
+            const mapping = { ...manualMappings };
+            const groups = [];
+
+            // 1. Group names by similarity and subset logic
+            uniqueNames.forEach(rawName => {
+                if (mapping[rawName]) return;
+
+                const name = String(rawName);
+                const normalized = normalizeName(name);
+                if (!normalized) return;
+
+                let foundGroup = groups.find(g => {
+                    if (g.normalized === normalized) return true;
+
+                    const tokens1 = normalized.split(' ');
+                    const tokens2 = g.normalized.split(' ');
+
+                    // If one name is a subset of words of the other (min 2 tokens to avoid false positives with common names)
+                    if (tokens1.length >= 2 && tokens2.length >= 2) {
+                        return tokens1.every(t => tokens2.includes(t)) || tokens2.every(t => tokens1.includes(t));
+                    }
+                    return false;
+                });
+
+                if (foundGroup) {
+                    foundGroup.variants.push(name);
+                    // Update canonical if the new one is more complete (more tokens or same tokens but longer)
+                    const currentTokens = foundGroup.normalized.split(' ');
+                    const newTokens = normalized.split(' ');
+                    if (newTokens.length > currentTokens.length || (newTokens.length === currentTokens.length && name.length > foundGroup.canonical.length)) {
+                        foundGroup.canonical = name;
+                        foundGroup.normalized = normalized;
+                    }
+                } else {
+                    groups.push({
+                        canonical: name,
+                        normalized: normalized,
+                        variants: [name]
+                    });
+                }
+            });
+
+            // 2. Finalize mapping with Title Case
+            groups.forEach(g => {
+                const unifiedName = toTitleCase(g.canonical);
+                g.variants.forEach(v => {
+                    mapping[v] = unifiedName;
+                });
+            });
+
+            // Ensure manual mappings also get Title Case if they are just strings
+            Object.keys(mapping).forEach(key => {
+                if (typeof mapping[key] === 'string') {
+                    mapping[key] = toTitleCase(mapping[key]);
+                }
+            });
+
+            return mapping;
+        }
+
+
+        function renderCalendar() {
+            calendarGrid.innerHTML = '';
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            currentMonthDisplay.textContent = `${monthNames[month]} ${year}`;
+
+            // Day names
+            dayNames.forEach(name => {
+                const div = document.createElement('div');
+                div.className = 'day-name';
+                div.textContent = name;
+                calendarGrid.appendChild(div);
+            });
+
+            const dayIndex = new Date(year, month, 1).getDay();
+            // Adjust to make Monday (1) the first day (0), and Sunday (0) the last day (6)
+            const firstDay = (dayIndex === 0) ? 6 : dayIndex - 1;
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Empty slots for previous month
+            for (let i = 0; i < firstDay; i++) {
+                const div = document.createElement('div');
+                div.className = 'day empty';
+                calendarGrid.appendChild(div);
+            }
+
+            // Days of the month
+            for (let d = 1; d <= daysInMonth; d++) {
+                const div = document.createElement('div');
+                div.className = 'day';
+                div.textContent = d;
+
+                const dateKey = `${year}-${(month + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+
+                if (events[dateKey]) {
+                    div.classList.add('has-event');
+                }
+
+                const today = new Date();
+                if (d === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                    div.classList.add('today');
+                }
+
+                if (selectedDateKey === dateKey) {
+                    div.classList.add('selected');
+                }
+
+                div.onclick = () => selectDate(dateKey, d, month, year);
+                calendarGrid.appendChild(div);
+            }
+        }
+
+        function selectDate(key, day, month, year) {
+            selectedDateKey = key;
+            renderCalendar();
+
+            selectedDateTitle.textContent = `${day} de ${monthNames[month]}, ${year}`;
+
+            const dayEvents = events[key] || [];
+            if (dayEvents.length === 0) {
+                eventList.innerHTML = '<div class="no-data">No hay datos para esta fecha.</div>';
+            } else {
+                // Group by unified race name
+                const raceGroups = {};
+                dayEvents.forEach(event => {
+                    const unifiedRace = event[detectedRaceKey] || event['Nombre de la Prueba'] || event['Nombre'] || 'Detalles';
+
+                    if (!raceGroups[unifiedRace]) {
+                        raceGroups[unifiedRace] = [];
+                    }
+                    raceGroups[unifiedRace].push(event);
+                });
+
+                const runnerKey = detectedRunnerKey;
+                const posKey = detectedPosKey;
+                const genderKey = detectedGenderKey;
+
+                eventList.innerHTML = Object.entries(raceGroups).map(([raceName, participants]) => {
+                    // Sort participants by position
+                    const sortedParticipants = participants.sort((a, b) => {
+                        const vA = a[posKey];
+                        const vB = b[posKey];
+                        const posA = parseInt(vA) || (typeof vA === 'string' ? 9998 : 9999);
+                        const posB = parseInt(vB) || (typeof vB === 'string' ? 9998 : 9999);
+                        return posA - posB;
+                    });
+
+                    const rows = sortedParticipants.map(p => {
+                        const unifiedRunner = p[runnerKey] || '';
+
+                        // Find distance key
+                        const distanceKey = Object.keys(p).find(k => k.toLowerCase().includes('distancia'));
+                        let distVal = p[distanceKey] || '-';
+                        if (!isNaN(distVal) && distVal !== '-') distVal += ' KM';
+
+                        const gender = p[genderKey] || '-';
+                        const position = p[posKey] || '-';
+                        const type = p['Tipo de Carrera'] || p['Tipo'] || '-';
+
+                        return `
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <td style="padding: 0.5rem; font-size: 0.85rem;">${unifiedRunner}</td>
+                                <td style="padding: 0.5rem; font-size: 0.85rem; text-align: center;">${distVal}</td>
+                                <td style="padding: 0.5rem; font-size: 0.85rem; text-align: center;">${gender}</td>
+                                <td style="padding: 0.5rem; font-size: 0.85rem; text-align: center; font-weight: 700; color: var(--accent);">${position}</td>
+                                <td style="padding: 0.5rem; font-size: 0.85rem; text-align: right;">${type}</td>
+                            </tr>
+                        `;
+                    }).join('');
+
+                    return `
+                        <div class="event-card" style="margin-bottom: 1.5rem;">
+                            <h3 style="color: var(--primary); margin-bottom: 1rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">
+                                ${raceName}
+                            </h3>
+                            <div class="table-container">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="color: var(--text-muted); font-size: 0.75rem; text-align: left; border-bottom: 1px solid var(--primary);">
+                                            <th style="padding: 0.5rem;">Corredor</th>
+                                            <th style="padding: 0.5rem; text-align: center;">Distancia</th>
+                                            <th style="padding: 0.5rem; text-align: center;">Sexo</th>
+                                            <th style="padding: 0.5rem; text-align: center;">Pos</th>
+                                            <th style="padding: 0.5rem; text-align: right;">Tipo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${rows}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        async function generateHDPoster(type) {
+            const btn = event.currentTarget;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '🕒 Generando...';
+            btn.disabled = true;
+
+            try {
+                // 1. Get current filters from UI
+                const monthVal = document.getElementById('rank-month-select').value;
+                const genderVal = document.getElementById('rank-gender-select').value;
+                const labels = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+                // 2. Prepare data copy and apply filters/bonus
+                let filteredData = [...rawExcelData];
+
+                // Month filter
+                if (monthVal !== 'all') {
+                    const targetMonth = parseInt(monthVal);
+                    filteredData = filteredData.filter(row => {
+                        let d = row[detectedDateKey];
+                        if (!(d instanceof Date)) d = new Date(d);
+                        return d.getMonth() === targetMonth;
+                    });
+                }
+
+                // Apply bonus to the filtered timeframe
+                applyBonusPoints(filteredData, type === 'podiums'); // Force for podiums
+
+                // Gender filter
+                if (genderVal !== 'all' && detectedGenderKey) {
+                    filteredData = filteredData.filter(row => {
+                        const val = String(row[detectedGenderKey] || '').toUpperCase();
+                        if (genderVal === 'H') {
+                            return val.startsWith('H') || val.startsWith('MASC') || val.startsWith('V');
+                        } else {
+                            return val.startsWith('M') && !val.startsWith('MASC') || val.startsWith('FEM') || val.startsWith('F');
+                        }
+                    });
+                }
+
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                // Poster Dimensions
+                canvas.width = 1200;
+                canvas.height = 1600;
+
+                // Background
+                const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                grad.addColorStop(0, '#061109');
+                grad.addColorStop(1, '#020503');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Title
+                ctx.fillStyle = '#10b981';
+                ctx.font = 'bold 60px Outfit, Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('C.A RUNNING CASTELLÓ', canvas.width / 2, 120);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '30px Outfit, Arial';
+                let subtitle = type === 'podiums' ? 'RESUMEN DE PODIUMS' : 'CLASIFICACIÓN GENERAL';
+
+                if (monthVal !== 'all') subtitle += ` - ${labels[parseInt(monthVal)].toUpperCase()}`;
+                if (genderVal !== 'all') subtitle += genderVal === 'H' ? ' (MASCULINO)' : ' (FEMENINO)';
+                if (bonusMode) subtitle += ' [+ BONUS]';
+
+                ctx.fillText(subtitle, canvas.width / 2, 170);
+
+                ctx.strokeStyle = '#10b981';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(canvas.width / 2 - 100, 200);
+                ctx.lineTo(canvas.width / 2 + 100, 200);
+                ctx.stroke();
+
+                if (type === 'podiums') {
+                    const roadRaces = filteredData.filter(r => (r['Tipo de Carrera'] || r['Tipo'] || '').toLowerCase().includes('asfalto'));
+                    const trailRaces = filteredData.filter(r => {
+                        const type = (r['Tipo de Carrera'] || r['Tipo'] || '').toLowerCase();
+                        return type.includes('montaña') || type.includes('trail') || type.includes('obstáculos');
+                    });
+
+                    const categories = [
+                        { title: 'ASFALTO MASCULINO', data: roadRaces, gender: 'H', x: 300, y: 300, color: '#ef4444' },
+                        { title: 'ASFALTO FEMENINO', data: roadRaces, gender: 'M', x: 900, y: 300, color: '#ef4444' },
+                        { title: 'TRAIL MASCULINO', data: trailRaces, gender: 'H', x: 300, y: 950, color: '#fbbf24' },
+                        { title: 'TRAIL FEMENINO', data: trailRaces, gender: 'M', x: 900, y: 950, color: '#fbbf24' }
+                    ];
+
+                    categories.forEach(cat => {
+                        let catData = cat.data;
+                        if (detectedGenderKey) {
+                            catData = catData.filter(row => {
+                                const val = String(row[detectedGenderKey] || '').toUpperCase();
+                                if (cat.gender === 'H') {
+                                    return val.startsWith('H') || val.startsWith('MASC') || val.startsWith('V');
+                                } else {
+                                    return val.startsWith('M') && !val.startsWith('MASC') || val.startsWith('FEM') || val.startsWith('F');
+                                }
+                            });
+                        }
+                        const top3 = calcRank(catData, type === 'podiums').slice(0, 3);
+
+                        // Draw box
+                        ctx.fillStyle = 'rgba(255,255,255,0.03)';
+                        ctx.beginPath();
+                        ctx.roundRect(cat.x - 260, cat.y - 50, 520, 550, 20);
+                        ctx.fill();
+                        ctx.strokeStyle = cat.color + '44';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+
+                        // Category Title
+                        ctx.fillStyle = cat.color;
+                        ctx.font = 'bold 36px Outfit, Arial';
+                        ctx.fillText(cat.title, cat.x, cat.y);
+
+                        const medals = ['🥇', '🥈', '🥉'];
+                        const medalsColors = ['#fbbf24', '#cbd5e1', '#cd7f32'];
+
+                        top3.forEach((r, i) => {
+                            const yp = cat.y + 100 + (i * 140);
+                            ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                            ctx.beginPath();
+                            ctx.roundRect(cat.x - 230, yp - 70, 460, 110, 15);
+                            ctx.fill();
+
+                            ctx.font = '45px Arial';
+                            ctx.fillText(medals[i], cat.x - 170, yp - 5);
+
+                            ctx.fillStyle = '#ffffff';
+                            ctx.font = 'bold 28px Outfit, Arial';
+                            ctx.textAlign = 'left';
+                            ctx.fillText(r.name.substring(0, 25), cat.x - 110, yp - 25);
+
+                            ctx.fillStyle = medalsColors[i];
+                            ctx.font = 'bold 30px Outfit, Arial';
+                            const isBonusActiveOrForced = bonusMode || type === 'podiums';
+                            const label = isBonusActiveOrForced ? `${r.totalScore.toFixed(1)} pts [${r.totalKm.toFixed(1)} km + ${r.totalBonus} b]` : `${r.totalKm.toFixed(1)} km`;
+                            ctx.fillText(label, cat.x - 110, yp + 15);
+                            ctx.textAlign = 'center';
+                        });
+
+                        if (top3.length === 0) {
+                            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                            ctx.font = 'italic 24px Outfit, Arial';
+                            ctx.fillText('Sin datos', cat.x, cat.y + 100);
+                        }
+                    });
+                } else {
+                    const roadRaces = filteredData.filter(r => (r['Tipo de Carrera'] || r['Tipo'] || '').toLowerCase().includes('asfalto'));
+                    const trailRaces = filteredData.filter(r => {
+                        const type = (r['Tipo de Carrera'] || r['Tipo'] || '').toLowerCase();
+                        return type.includes('montaña') || type.includes('trail') || type.includes('obstáculos');
+                    });
+
+                    const asfaltoRanking = calcRank(roadRaces).slice(0, 10);
+                    const trailRanking = calcRank(trailRaces).slice(0, 10);
+
+                    const lists = [
+                        { title: 'RANKING ASFALTO (TOP 10)', data: asfaltoRanking, x: 300, color: '#ef4444' },
+                        { title: 'RANKING TRAIL (TOP 10)', data: trailRanking, x: 900, color: '#fbbf24' }
+                    ];
+
+                    lists.forEach(list => {
+                        ctx.fillStyle = list.color;
+                        ctx.font = 'bold 36px Outfit, Arial';
+                        ctx.fillText(list.title, list.x, 300);
+
+                        list.data.forEach((r, i) => {
+                            const yp = 380 + (i * 120);
+                            ctx.fillStyle = 'rgba(255,255,255,0.03)';
+                            ctx.beginPath();
+                            ctx.roundRect(list.x - 260, yp - 45, 520, 90, 10);
+                            ctx.fill();
+
+                            ctx.fillStyle = i < 3 ? list.color : 'rgba(255,255,255,0.5)';
+                            ctx.font = 'bold 24px Outfit, Arial';
+                            ctx.textAlign = 'left';
+                            ctx.fillText(String(i + 1).padStart(2, '0'), list.x - 240, yp + 8);
+
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillText(r.name.substring(0, 30), list.x - 190, yp + 8);
+
+                            ctx.fillStyle = list.color;
+                            ctx.textAlign = 'right';
+                            const scoreLabel = bonusMode ? `${r.totalScore.toFixed(1)} pts` : `${r.totalKm.toFixed(1)} km`;
+                            ctx.fillText(scoreLabel, list.x + 240, yp + 8);
+                            ctx.textAlign = 'center';
+                        });
+                    });
+                }
+
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.font = '20px Outfit, Arial';
+                ctx.fillText('Generado el ' + new Date().toLocaleString() + ' - Liga Interna Running Castelló', canvas.width / 2, canvas.height - 50);
+
+                const link = document.createElement('a');
+                link.download = `Poster_${type}_${new Date().toISOString().split('T')[0]}.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 0.95);
+                link.click();
+            } catch (err) {
+                console.error('Error generating poster:', err);
+                alert('Error al generar la imagen HD.');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function prevMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        }
+        // Initial render is now handled in DOMContentLoaded
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker registrado con éxito'))
+                    .catch(err => console.log('Error al registrar Service Worker:', err));
+            });
+        }
+    </script>
+</body>
+
+</html>
