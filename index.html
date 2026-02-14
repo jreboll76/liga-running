@@ -11,13 +11,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Liga Running">
-    <link rel="apple-touch-icon" href="aRCHIVOS/logo-club.jpeg">
+    <link rel="apple-touch-icon" href="aRCHIVOS/logo-club.png">
 
     <!-- WhatsApp / Social Media Preview (Open Graph) -->
     <meta property="og:title" content="Liga Interna Running Castelló">
     <meta property="og:description"
         content="Resultados, Rankings y Calendario de la Liga Interna del C.A Running Castelló.">
-    <meta property="og:image" content="aRCHIVOS/logo-club.jpeg">
+    <meta property="og:image" content="aRCHIVOS/logo-club.png">
     <meta property="og:url" content="./index.html">
     <meta property="og:type" content="website">
 
@@ -87,12 +87,24 @@
             width: 120px;
             height: 120px;
             object-fit: contain;
-            filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.4));
+            filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.4));
             border-radius: 50%;
             background: transparent;
             padding: 4px;
-            border: 2px solid var(--primary);
+            animation: floatLogo 4s ease-in-out infinite;
             transition: transform 0.3s ease;
+        }
+
+        @keyframes floatLogo {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
         }
 
         .club-logo:hover {
@@ -486,8 +498,9 @@
             filter: drop-shadow(0 0 30px rgba(16, 185, 129, 0.3));
             border-radius: 50%;
             background: transparent;
-            border: 3px solid var(--primary);
-            padding: 6px;
+            padding: 0;
+            object-fit: contain;
+            animation: floatLogo 5s ease-in-out infinite;
         }
 
         .landing-title {
@@ -893,7 +906,7 @@
     <!-- Landing Screen -->
     <div id="landing-screen">
         <div class="landing-card">
-            <img src="aRCHIVOS/logo-club.jpeg" alt="Logo" class="landing-logo"
+            <img src="aRCHIVOS/logo-club.png" alt="Logo" class="landing-logo"
                 onerror="this.src='https://via.placeholder.com/180?text=Logo+Running+Castello'">
             <h1 class="landing-title">C.A Running Castelló</h1>
             <p class="landing-subtitle">Gestión de Liga Interna y Calendario de Eventos</p>
