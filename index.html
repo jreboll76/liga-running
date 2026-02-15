@@ -1483,10 +1483,10 @@
                 let filtered = data;
                 if (typeFilter === 'asfalto') {
                     filtered = filtered.filter(r => (r['Tipo'] || r['Tipo de Carrera'] || '').toLowerCase().includes('asfalto'));
-                } else {
+                } else if (typeFilter === 'trail') {
                     filtered = filtered.filter(r => {
                         const t = (r['Tipo'] || r['Tipo de Carrera'] || '').toLowerCase();
-                        return t.includes('trail') || t.includes('montaña');
+                        return t.includes('trail') || t.includes('montaña') || t.includes('obstáculos');
                     });
                 }
 
