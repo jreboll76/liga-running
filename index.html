@@ -612,6 +612,211 @@
             margin-top: 0.5rem;
         }
 
+        /* Splash Screen and Convenios Styles */
+        #splash-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 20% 20%, var(--aurora-1), transparent 40%),
+                radial-gradient(circle at 80% 80%, var(--aurora-2), transparent 40%),
+                var(--bg);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .splash-card {
+            background: rgba(15, 28, 20, 0.4);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 2.5rem;
+            padding: 4rem 3rem;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.8);
+            animation: fadeIn 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .splash-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .btn-splash {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 2.5rem 2rem;
+            border-radius: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-splash i {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-splash:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--primary);
+            background: rgba(16, 185, 129, 0.1);
+            box-shadow: 0 20px 40px -10px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-splash.primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            box-shadow: 0 15px 35px -10px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-splash.primary:hover {
+            box-shadow: 0 25px 50px -15px rgba(16, 185, 129, 0.6);
+        }
+
+        #convenios-screen {
+            display: none;
+            padding: 4rem 2rem;
+            min-height: 100vh;
+            background: var(--bg);
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 1rem;
+            cursor: pointer;
+            font-weight: 700;
+            z-index: 10001;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .back-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .convenio-category-title {
+            grid-column: 1 / -1;
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin: 2.5rem 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.2);
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .convenio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .convenio-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .convenio-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            opacity: 0.5;
+        }
+
+        .convenio-card:hover {
+            transform: translateY(-10px);
+            background: rgba(16, 185, 129, 0.08);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .convenio-icon {
+            font-size: 3.5rem;
+            filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.3));
+        }
+
+        .convenio-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1.4;
+        }
+
+        .btn-view-pdf {
+            margin-top: auto;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .convenio-card:hover .btn-view-pdf {
+            background: var(--secondary);
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            .splash-buttons {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .btn-splash {
+                padding: 1.5rem;
+                font-size: 1.2rem;
+            }
+
+            .splash-card {
+                padding: 2.5rem 1.5rem;
+            }
+        }
+
         /* Runner Selection Cards */
         .runner-card-grid {
             display: grid;
@@ -914,13 +1119,50 @@
 </head>
 
 <body>
-    <!-- Landing Screen -->
-    <div id="landing-screen">
-        <div class="landing-card">
+    <!-- Initial Splash Screen -->
+    <div id="splash-screen">
+        <div class="splash-card">
             <img src="aRCHIVOS/logo-club.png" alt="Logo" class="landing-logo"
                 onerror="this.src='https://via.placeholder.com/180?text=Logo+Running+Castello'">
             <h1 class="landing-title">C.A Running Castelló</h1>
-            <p class="landing-subtitle">Gestión de Liga Interna y Calendario de Eventos</p>
+            <p class="landing-subtitle">BIENVENIDO AL PORTAL DEL SOCIO</p>
+
+            <div class="splash-buttons">
+                <button class="btn-splash" onclick="showScreen('convenios-screen')">
+                    <span>🤝</span>
+                    CONVENIOS
+                </button>
+                <button class="btn-splash primary" onclick="showScreen('landing-screen')">
+                    <span>🏆</span>
+                    LIGA INTERNA
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Convenios Screen -->
+    <div id="convenios-screen" style="display: none;">
+        <button class="back-btn" onclick="showScreen('splash-screen')"><span>🏠</span> Inicio</button>
+        <div class="container" style="max-width: 1200px; margin: 0 auto; padding-top: 6rem;">
+            <div style="text-align: center; margin-bottom: 4rem;">
+                <h1 class="landing-title">CONVENIOS Y ACUERDOS</h1>
+                <p class="landing-subtitle">Beneficios exclusivos para los socios del C.A Running Castelló</p>
+            </div>
+
+            <div id="convenios-list-container" class="convenio-grid">
+                <!-- PDF cards will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Landing Screen (Upload Screen) -->
+    <div id="landing-screen" style="display: none;">
+        <button class="back-btn" onclick="showScreen('splash-screen')"><span>🏠</span> Inicio</button>
+        <div class="landing-card">
+            <img src="aRCHIVOS/logo-club.png" alt="Logo" class="landing-logo"
+                onerror="this.src='https://via.placeholder.com/180?text=Logo+Running+Castello'">
+            <h1 class="landing-title">LIGA INTERNA</h1>
+            <p class="landing-subtitle">Sube el archivo Excel para ver los resultados</p>
 
             <div class="upload-btn-wrapper">
                 <label for="file-input-landing" class="btn-upload">
@@ -946,6 +1188,7 @@
     <!-- Dashboard Screen -->
     <div id="dashboard-screen">
         <header>
+            <button class="back-btn" onclick="showScreen('splash-screen')"><span>🏠</span> Inicio</button>
             <div style="position: absolute; top: 1rem; right: 2rem; display: flex; gap: 1rem; align-items: center;">
                 <button class="tab-btn"
                     style="background: linear-gradient(135deg, var(--secondary), var(--primary)); color: white; border: none; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);"
@@ -1243,7 +1486,74 @@
             });
 
             renderCalendar();
+            renderConvenios();
         });
+
+        function renderConvenios() {
+            const categories = [
+                {
+                    title: "🏥 Fisioterapia y Salud",
+                    icon: "🩹",
+                    items: [
+                        { name: "Alfonso Calvo", file: "Alfonso Calvo, Fisioterapia.pdf" },
+                        { name: "Mario Alba", file: "Mario_Alba Fisioterapia.pdf" }
+                    ]
+                },
+                {
+                    title: "🍎 Nutrición",
+                    icon: "🥗",
+                    items: [
+                        { name: "Marta Esteve", file: "Nutricionista , Marta Esteve.pdf" },
+                        { name: "Isabel Blasco", file: "Nutricionista Isabel Blasco.pdf" }
+                    ]
+                },
+                {
+                    title: "💪 Entrenamiento y Gym",
+                    icon: "🏋️‍♂️",
+                    items: [
+                        { name: "Gimnasio SUMA", file: "Gimnasio SUMA.pdf" },
+                        { name: "Prueba Esfuerzo Dynamo Esport", file: "Prueba Esfuerzo Dynamo Esport.pdf" }
+                    ]
+                },
+                {
+                    title: "🤝 Otros Acuerdos",
+                    icon: "📜",
+                    items: [
+                        { name: "Convenio Lázaro", file: "Convenio Lázaro.pdf" },
+                        { name: "Quiromasajista BIOESPAI", file: "Quiromasajista BIOESPAI.pdf" }
+                    ]
+                }
+            ];
+
+            const container = document.getElementById('convenios-list-container');
+            if (!container) return;
+
+            container.innerHTML = categories.map(cat => `
+                <div class="convenio-category-title">${cat.title}</div>
+                ${cat.items.map(c => `
+                    <div class="convenio-card" onclick="window.open('aRCHIVOS/Convenios/${encodeURIComponent(c.file)}', '_blank')">
+                        <div class="convenio-icon">${cat.icon}</div>
+                        <div class="convenio-name">${c.name}</div>
+                        <button class="btn-view-pdf">Ver Acuerdo</button>
+                    </div>
+                `).join('')}
+            `).join('');
+        }
+
+        function showScreen(screenId) {
+            // Hide all main screens
+            document.getElementById('splash-screen').style.display = 'none';
+            document.getElementById('convenios-screen').style.display = 'none';
+            document.getElementById('landing-screen').style.display = 'none';
+            document.getElementById('dashboard-screen').style.display = 'none';
+
+            // Show target screen
+            const target = document.getElementById(screenId);
+            if (target) {
+                target.style.display = screenId === 'dashboard-screen' ? 'block' : 'flex';
+                target.style.animation = 'fadeIn 0.6s ease-out';
+            }
+        }
 
 
 
@@ -1432,11 +1742,7 @@
                 populateOtherTabs(jsonData);
                 renderCalendar();
 
-                if (landingScreen && dashboardScreen) {
-                    landingScreen.style.display = 'none';
-                    dashboardScreen.style.display = 'block';
-                    dashboardScreen.style.animation = 'fadeIn 0.6s ease-out';
-                }
+                showScreen('dashboard-screen');
             } catch (err) {
                 console.error('Error parsing Excel:', err);
                 alert('Hubo un error al procesar el archivo. Asegúrate de que el formato sea correcto.');
