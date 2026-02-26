@@ -1211,9 +1211,6 @@
             <button class="tab-btn" onclick="switchTab('clasificacion', event)">🏆 Clasificación</button>
             <button class="tab-btn" onclick="switchTab('carreras', event)">🏁 Carreras</button>
             <button class="tab-btn" onclick="switchTab('corredores', event)">👤 Corredores</button>
-            <button class="tab-btn" onclick="switchTab('generales', event)">Datos Generales</button>
-            <button class="tab-btn" onclick="switchTab('asfalto', event)">Asfalto</button>
-            <button class="tab-btn" onclick="switchTab('trail', event)">Trail</button>
             <button class="tab-btn" onclick="switchTab('podiums', event)">🏅 Podiums</button>
         </div>
 
@@ -1321,11 +1318,37 @@
         </div>
 
         <div id="carreras" class="tab-content">
-            <div class="container" style="grid-template-columns: 1fr;">
-                <div class="card">
+            <div class="card"
+                style="margin-bottom: 2rem; border-color: var(--primary); background: rgba(99, 102, 241, 0.05);">
+                <div style="display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 1rem;">
+                    <button class="tab-btn active" id="filter-btn-all" onclick="filterCarrerasDisplay('all', event)">🌐
+                        Todas</button>
+                    <button class="tab-btn" id="filter-btn-asfalto"
+                        onclick="filterCarrerasDisplay('asfalto', event)">🛣️ Solo Asfalto</button>
+                    <button class="tab-btn" id="filter-btn-trail" onclick="filterCarrerasDisplay('trail', event)">⛰️
+                        Solo Trail</button>
+                </div>
+            </div>
+
+            <div class="container" style="grid-template-columns: 1fr; gap: 2rem;">
+                <div class="card" id="card-carreras-all">
                     <div class="details-title">Resultados por Carrera</div>
                     <div id="carreras-list" class="table-container">
                         <div class="no-data">Sube un archivo para ver los resultados agrupados.</div>
+                    </div>
+                </div>
+
+                <div class="card" id="card-carreras-asfalto">
+                    <div class="details-title" style="color: #ef4444;">🛣️ Carreras de Asfalto</div>
+                    <div id="asfalto-list" class="table-container">
+                        <div class="no-data">Sube un archivo para ver las carreras de asfalto.</div>
+                    </div>
+                </div>
+
+                <div class="card" id="card-carreras-trail">
+                    <div class="details-title" style="color: #fbbf24;">⛰️ Eventos de Trail</div>
+                    <div id="trail-list" class="table-container">
+                        <div class="no-data">Sube un archivo para ver los eventos de trail.</div>
                     </div>
                 </div>
             </div>
@@ -1367,38 +1390,7 @@
         </div>
 
 
-        <div id="generales" class="tab-content">
-            <div class="container" style="grid-template-columns: 1fr;">
-                <div class="card">
-                    <div class="details-title">Todos los Registros</div>
-                    <div id="generales-list" class="table-container">
-                        <div class="no-data">Sube un archivo para ver los datos generales.</div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <div id="asfalto" class="tab-content">
-            <div class="container" style="grid-template-columns: 1fr;">
-                <div class="card">
-                    <div class="details-title">Carreras de Asfalto</div>
-                    <div id="asfalto-list" class="table-container">
-                        <div class="no-data">Sube un archivo para ver las carreras de asfalto.</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="trail" class="tab-content">
-            <div class="container" style="grid-template-columns: 1fr;">
-                <div class="card">
-                    <div class="details-title">Eventos de Trail</div>
-                    <div id="trail-list" class="table-container">
-                        <div class="no-data">Sube un archivo para ver los eventos de trail.</div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <div id="podiums" class="tab-content">
             <div style="display: flex; justify-content: flex-end; margin-bottom: 2rem; padding: 0 2rem;">
@@ -1557,6 +1549,34 @@
 
 
 
+        function filterCarrerasDisplay(filterType, event) {
+            // Update button states
+            const buttons = document.querySelectorAll('#carreras .tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+
+            // Toggle card visibility
+            const cardAll = document.getElementById('card-carreras-all');
+            const cardAsfalto = document.getElementById('card-carreras-asfalto');
+            const cardTrail = document.getElementById('card-carreras-trail');
+
+            if (filterType === 'all') {
+                cardAll.style.display = 'block';
+                cardAsfalto.style.display = 'block';
+                cardTrail.style.display = 'block';
+            } else if (filterType === 'asfalto') {
+                cardAll.style.display = 'none';
+                cardAsfalto.style.display = 'block';
+                cardTrail.style.display = 'none';
+            } else if (filterType === 'trail') {
+                cardAll.style.display = 'none';
+                cardAsfalto.style.display = 'none';
+                cardTrail.style.display = 'block';
+            }
+        }
+
         function switchTab(tabId, event) {
             // Hide all contents
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -1582,9 +1602,9 @@
 
             // Reliable proxies ordered by stability for this source
             const proxies = [
-                (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-                (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-                (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+                { url: (u) => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`, type: 'json-data-uri' },
+                { url: (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`, type: 'blob' },
+                { url: (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`, type: 'blob' }
             ];
 
             // Create loading overlay
@@ -1599,10 +1619,25 @@
             `;
             document.body.appendChild(overlay);
 
-            async function tryFetch(url) {
-                const response = await fetch(url);
+            async function tryFetch(proxy) {
+                const response = await fetch(proxy.url(exportUrl));
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                return await response.arrayBuffer();
+
+                if (proxy.type === 'json-data-uri') {
+                    const json = await response.json();
+                    if (!json.contents) throw new Error('No contents in JSON');
+                    // allorigins returns the file as a data URI like data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,...
+                    const base64 = json.contents.split(',')[1];
+                    const binaryStr = atob(base64);
+                    const len = binaryStr.length;
+                    const bytes = new Uint8Array(len);
+                    for (let i = 0; i < len; i++) {
+                        bytes[i] = binaryStr.charCodeAt(i);
+                    }
+                    return bytes.buffer;
+                } else {
+                    return await response.arrayBuffer();
+                }
             }
 
             try {
@@ -1612,19 +1647,24 @@
                 // Try direct fetch first (will likely fail CORS but good practice)
                 try {
                     console.log("Intentando descarga directa...");
-                    arrayBuffer = await tryFetch(exportUrl);
+                    const response = await fetch(exportUrl);
+                    if (response.ok) {
+                        arrayBuffer = await response.arrayBuffer();
+                    } else {
+                        throw new Error("Direct fetch failed");
+                    }
                 } catch (e) {
                     lastError = e;
                     // Try sequentially through proxies
-                    for (const proxyFn of proxies) {
-                        const proxyUrl = proxyFn(exportUrl);
-                        console.log(`Intentando via proxy: ${proxyUrl.split('?')[0]}`);
+                    for (const proxy of proxies) {
+                        console.log(`Intentando via proxy: ${proxy.url(exportUrl).split('?')[0]}`);
                         try {
-                            arrayBuffer = await tryFetch(proxyUrl);
-                            if (arrayBuffer) break;
+                            arrayBuffer = await tryFetch(proxy);
+                            if (arrayBuffer && arrayBuffer.byteLength > 1000) break;
                         } catch (proxyErr) {
                             console.warn(`Proxy fallido:`, proxyErr.message);
                             lastError = proxyErr;
+                            arrayBuffer = null;
                         }
                     }
                 }
@@ -2565,7 +2605,6 @@
                 }).join('');
             };
 
-            const generalesList = document.getElementById('generales-list');
             const asfaltoList = document.getElementById('asfalto-list');
             const trailList = document.getElementById('trail-list');
             const rankingAsfalto = document.getElementById('ranking-asfalto-list');
@@ -2628,8 +2667,6 @@
                     `;
                 }).join('');
             }
-
-            tableHelper(generalesList, data);
 
             const roadRaces = data.filter(r => (r['Tipo de Carrera'] || r['Tipo'] || '').toLowerCase().includes('asfalto'));
             const trailRaces = data.filter(r => {
