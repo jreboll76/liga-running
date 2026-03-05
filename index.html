@@ -1115,6 +1115,92 @@
                 transform: translateY(0);
             }
         }
+
+        /* Próximas Carreras Premium Styles */
+        .proxima-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
+        }
+
+        .proxima-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            border-color: rgba(255, 255, 255, 0.2) !important;
+        }
+
+        .date-block {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 2px 20px rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        .pulsing-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 1);
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+
+        .btn-inscribir {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            text-decoration: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: white;
+            z-index: 1;
+        }
+
+        .btn-inscribir::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transform: skewX(-25deg);
+            z-index: -1;
+        }
+
+        .btn-inscribir:hover::after {
+            animation: shine 0.7s;
+        }
+
+        .btn-inscribir:hover {
+            transform: scale(1.05);
+        }
+
+        @keyframes shine {
+            100% {
+                left: 200%;
+            }
+        }
     </style>
 </head>
 
@@ -1204,9 +1290,10 @@
         <div class="tabs-nav">
             <button class="tab-btn active" onclick="switchTab('calendario', event)">Calendario</button>
             <button class="tab-btn" onclick="switchTab('clasificacion', event)">🏆 Clasificación</button>
-            <button class="tab-btn" onclick="switchTab('carreras', event)">🏁 Carreras</button>
+            <button class="tab-btn" onclick="switchTab('carreras', event)">🏁 Resultados</button>
             <button class="tab-btn" onclick="switchTab('corredores', event)">👤 Corredores</button>
             <button class="tab-btn" onclick="switchTab('podiums', event)">🏅 Podiums</button>
+            <button class="tab-btn" onclick="switchTab('proximas', event)">⏭️ Próximas</button>
             <button class="tab-btn" onclick="switchTab('semanales', event)"
                 style="border-color: var(--primary); color: var(--primary);">📨 Enviar Resultado</button>
         </div>
@@ -1410,6 +1497,22 @@
                 <div class="no-data" style="grid-column: span 2;">Sube un archivo para ver el resumen de podiums.</div>
             </div>
         </div>
+        <div id="proximas" class="tab-content">
+            <div class="card"
+                style="margin-bottom: 2rem; border-color: var(--primary); background: rgba(16, 185, 129, 0.05);">
+                <div class="details-title"
+                    style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; color: var(--primary); text-transform: uppercase;">
+                    <span>⏭️ Calendario de Próximas Carreras</span>
+                </div>
+            </div>
+            <div class="container" style="grid-template-columns: 1fr;">
+                <div id="proximas-list" style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%;">
+                    <div class="no-data" style="width: 100%;">Sube un archivo para ver las próximas carreras
+                        (debe incluir una pestaña llamada "Próximas" o similar).</div>
+                </div>
+            </div>
+        </div>
+
     </div> <!-- Close Dashboard Screen -->
 
     <!-- Libraries -->
@@ -1707,14 +1810,16 @@
                     return;
                 }
 
-                // Process other sheets for historical seasons
+                // Process other sheets for historical seasons and "Próximas"
                 historicalSeasons = {};
+                let proximasData = [];
                 console.log("Hojas detectadas en el libro:", workbook.SheetNames);
                 workbook.SheetNames.forEach(sheetName => {
                     const trimmed = sheetName.trim();
                     // Strict regex for seasons: 2022-2023, 2022/2023, 22-23, 2022 2023, etc.
                     const isSeasonPattern = /\d{2,4}[-/\s]\d{2,4}/.test(trimmed);
                     const isCurrent = trimmed === firstSheetName.trim();
+                    const isProximas = trimmed.toLowerCase().includes('próxima') || trimmed.toLowerCase().includes('proxima');
 
                     if (!isCurrent && isSeasonPattern) {
                         console.log(`Procesando hoja histórica: ${sheetName}`);
@@ -1725,6 +1830,13 @@
                             }
                         } catch (e) {
                             console.warn(`Error procesando temporada histórica ${sheetName}:`, e);
+                        }
+                    } else if (isProximas) {
+                        console.log(`Procesando hoja de Próximas Carreras: ${sheetName}`);
+                        try {
+                            proximasData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { cellDates: true });
+                        } catch (e) {
+                            console.warn(`Error procesando hoja de Próximas Carreras:`, e);
                         }
                     }
                 });
@@ -1786,6 +1898,7 @@
 
                 populateOtherTabs(jsonData);
                 renderCalendar();
+                renderProximasCarreras(proximasData);
 
                 showScreen('dashboard-screen');
             } catch (err) {
@@ -2512,6 +2625,195 @@
                     </tbody>
                 </table>
             `;
+        }
+
+        function renderProximasCarreras(data) {
+            const container = document.getElementById('proximas-list');
+            if (!container) return;
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div class="no-data" style="grid-column: 1 / -1; padding: 4rem; font-size: 1.2rem;">No se ha detectado información sobre próximas carreras. 🤷‍♂️</div>';
+                return;
+            }
+
+            const sample = data[0] || {};
+            const keys = Object.keys(sample);
+
+            // Using the user's explicit instruction to only look at the "Proximas" sheet
+            const nameKey = keys.find(k => k.toLowerCase().includes('prueba') || k.toLowerCase().includes('carrera') || k.toLowerCase().includes('evento') || k.toLowerCase().includes('nombre')) || keys[0];
+            const partKey = keys.find(k => k.toLowerCase() !== nameKey.toLowerCase() && (k.toLowerCase().includes('participante') || k.toLowerCase().includes('inscrito') || k.toLowerCase().includes('socio') || k.toLowerCase().includes('corredor') || k.toLowerCase().includes('atleta') || k.toLowerCase().includes('nombre')));
+            const dateKey = keys.find(k => k.toLowerCase().includes('fecha')) || keys[1];
+            const distKey = keys.find(k => k.toLowerCase().includes('distancia') || k.toLowerCase().includes('km'));
+            const typeKey = keys.find(k => k.toLowerCase().includes('tipo') || k.toLowerCase().includes('modalidad'));
+            const linkKey = keys.find(k => k.toLowerCase().includes('enlace') || k.toLowerCase().includes('web') || k.toLowerCase().includes('url') || k.toLowerCase().includes('inscrip'));
+
+            // Aggregate races with the same name and date to combine participants
+            const aggregatedRaces = {};
+            data.forEach(row => {
+                const raceNameRaw = row[nameKey];
+                if (!raceNameRaw) return;
+                const raceName = String(raceNameRaw).trim();
+
+                let rawDate = row[dateKey];
+                const dateStr = rawDate instanceof Date ? rawDate.getTime() : String(rawDate);
+                const typeStr = row[typeKey] ? String(row[typeKey]) : '';
+                const distStr = row[distKey] ? String(row[distKey]).trim() : 'NA';
+
+                // Use a composite key for uniqueness incorporating Distance so different distances are separate
+                const raceKey = `${raceName}_${dateStr}_${distStr}_${typeStr}`;
+
+                if (!aggregatedRaces[raceKey]) {
+                    aggregatedRaces[raceKey] = { ...row, _participantsList: [] };
+                }
+
+                // Add participant from this row if exists
+                if (partKey && row[partKey]) {
+                    aggregatedRaces[raceKey]._participantsList.push(String(row[partKey]));
+                } else if (row[nameKey] && String(row[nameKey]).length > 0 && !partKey) {
+                    // Try to guess participant context if no explicit column
+                    const runnerKey = keys.find(k => k.toLowerCase().includes('corredor') || k.toLowerCase().includes('atleta'));
+                    if (runnerKey && row[runnerKey]) {
+                        aggregatedRaces[raceKey]._participantsList.push(String(row[runnerKey]));
+                    }
+                }
+            });
+
+            const uniqueData = Object.values(aggregatedRaces);
+
+            const sortedData = [...uniqueData].sort((a, b) => {
+                const dateA = a[dateKey] instanceof Date ? a[dateKey] : new Date(a[dateKey] || '9999-12-31');
+                const dateB = b[dateKey] instanceof Date ? b[dateKey] : new Date(b[dateKey] || '9999-12-31');
+                return dateA - dateB;
+            });
+
+            const monthsNames = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Group races by Month-Year
+            const groupedRaces = {};
+
+            sortedData.forEach(race => {
+                let d = race[dateKey];
+                let dObj = d instanceof Date ? d : new Date(d);
+
+                // If invalid date, group under "Por Confirmar"
+                let groupKey = "POR CONFIRMAR";
+                if (d && !isNaN(dObj.getTime())) {
+                    if (dObj < today) return; // Skip past races
+                    groupKey = `CARRERAS DE ${monthsNames[dObj.getMonth()]} ${dObj.getFullYear()}`;
+                }
+
+                if (!groupedRaces[groupKey]) {
+                    groupedRaces[groupKey] = [];
+                }
+                groupedRaces[groupKey].push(race);
+            });
+
+            if (Object.keys(groupedRaces).length === 0) {
+                container.innerHTML = '<div class="no-data" style="padding: 4rem; font-size: 1.2rem;">No hay próximas carreras programadas a partir de hoy.</div>';
+                return;
+            }
+
+            let finalHtml = '';
+
+            for (const [monthGroup, races] of Object.entries(groupedRaces)) {
+
+                // Add the Month Header
+                finalHtml += `
+                    <div style="margin-top: 2.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--primary); padding-bottom: 0.5rem; text-align: left;">
+                        <h2 style="color: var(--primary); font-size: 1.5rem; font-weight: 900; letter-spacing: 1px; margin: 0;">
+                            🕒 ${monthGroup}
+                        </h2>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                `;
+
+                // Add each race within this month
+                finalHtml += races.map((race, idx) => {
+                    const raceName = race[nameKey] || 'Próxima Carrera';
+                    let rawDate = race[dateKey];
+                    let displayDate = '--/--/----';
+
+                    if (rawDate) {
+                        const dateObj = rawDate instanceof Date ? rawDate : new Date(rawDate);
+                        if (!isNaN(dateObj.getTime())) {
+                            displayDate = dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                        }
+                    }
+
+                    const distance = distKey && race[distKey] ? `${race[distKey]} KM` : '';
+
+                    let participantsHtml = '<div style="color: var(--text-muted); font-size: 0.9rem; font-style: italic;">Sin inscritos confirmados</div>';
+                    let numInscritos = 0;
+
+                    let rawPartsArr = race._participantsList || [];
+                    if (rawPartsArr.length === 0 && partKey && race[partKey]) {
+                        rawPartsArr = [String(race[partKey])];
+                    }
+
+                    if (rawPartsArr.length > 0) {
+                        let finalPartsArr = [];
+                        rawPartsArr.forEach(rawParts => {
+                            rawParts.split(/[\n,;]/).forEach(p => {
+                                const cleanName = p.replace(/^\s*\d+[\.\-\)]?\s*/, '')
+                                    .replace(/[\u1000-\uFFFF]+/g, '')
+                                    .replace(/[^\w\s\u00C0-\u024F]/g, '')
+                                    .replace(/\d+/g, '')
+                                    .trim();
+                                if (cleanName.length > 2 && !finalPartsArr.includes(cleanName)) {
+                                    finalPartsArr.push(cleanName);
+                                }
+                            });
+                        });
+
+                        numInscritos = finalPartsArr.length;
+                        if (numInscritos > 0) {
+                            participantsHtml = finalPartsArr.map(p =>
+                                `<span style="display: inline-block; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); padding: 0.5rem 1.25rem; border-radius: 2rem; font-size: 1.2rem; color: #fff; font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.2s;">👤 ${p}</span>`
+                            ).join('');
+                        }
+                    }
+
+                    const typeStr = race[typeKey] ? String(race[typeKey]) : '';
+                    const isTrail = typeStr.toLowerCase().includes('trail') || typeStr.toLowerCase().includes('montaña');
+                    const icon = isTrail ? '⛰️' : '🛣️';
+                    const colorVar = isTrail ? '#fbbf24' : '#ef4444';
+
+                    return `
+                        <div class="glass-card-premium animate-fadeInUp" style="animation-delay: ${idx * 0.05}s; padding: 2rem; border-radius: 1.5rem; text-align: center; background: linear-gradient(180deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%); border-top: 4px solid ${colorVar}; box-shadow: 0 10px 30px rgba(0,0,0,0.4); position: relative; overflow: hidden;">
+                            
+                            <!-- Header Info: Date & Type -->
+                            <div style="display: inline-flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1rem; background: rgba(0,0,0,0.3); padding: 0.4rem 1.5rem; border-radius: 2rem; border: 1px solid rgba(255,255,255,0.05);">
+                                <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-muted); letter-spacing: 1px;">📅 ${displayDate}</span>
+                                <span style="color: rgba(255,255,255,0.2);">|</span>
+                                <span style="font-size: 0.95rem; font-weight: 700; color: ${colorVar}; letter-spacing: 1px; display: flex; align-items: center; gap: 0.4rem;">${icon} ${typeStr || 'CARRERA'}</span>
+                            </div>
+
+                            <!-- Title & Distance -->
+                            <h3 style="margin: 0 0 0.5rem 0; font-size: 1.8rem; font-weight: 900; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.5); letter-spacing: -0.5px;">
+                                ${raceName} ${distance ? `<span style="color: var(--primary);">${distance}</span>` : ''}
+                            </h3>
+                            
+                            <hr style="border: none; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); margin: 1.5rem 0;">
+
+                            <!-- Participants Block -->
+                            <div style="margin-top: 1rem;">
+                                <div style="font-size: 0.85rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem;">
+                                    🏆 SOCI@S PARTICIPANTES (${numInscritos})
+                                </div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; align-items: center;">
+                                    ${participantsHtml}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                finalHtml += `</div>`; // Close the month's race list
+            }
+
+            container.innerHTML = finalHtml;
         }
 
 
