@@ -1265,6 +1265,14 @@
                         <option value="M">♀️ Femenino</option>
                     </select>
 
+                    <select id="rank-type-select" class="tab-btn"
+                        style="background: var(--card-bg); color: var(--text-main); outline: none; border: 1px solid var(--primary);"
+                        onchange="updateMonthlyRankings()">
+                        <option value="all">🌍 Todos los tipos</option>
+                        <option value="asfalto">🛣️ Asfalto</option>
+                        <option value="trail">⛰️ Trail</option>
+                    </select>
+
                     <button class="tab-btn"
                         style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);"
                         onclick="generateHDPoster('clasificacion')">
@@ -1980,6 +1988,7 @@
             if (rawExcelData.length === 0) return;
             const monthVal = document.getElementById('rank-month-select').value;
             const genderVal = document.getElementById('rank-gender-select').value;
+            const typeVal = document.getElementById('rank-type-select').value;
 
             let filteredData = rawExcelData;
             const labels = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
@@ -1988,6 +1997,11 @@
             if (genderVal !== 'all') {
                 const genderLabel = genderVal === 'H' ? '♂️' : '♀️';
                 selectedLabel += ` - ${genderLabel}`;
+            }
+
+            if (typeVal !== 'all') {
+                const typeLabel = typeVal === 'asfalto' ? '🛣️ Asfalto' : '⛰️ Trail';
+                selectedLabel += ` - ${typeLabel}`;
             }
 
             if (bonusMode) {
@@ -2019,6 +2033,18 @@
                         return val.startsWith('H') || val.startsWith('MASC') || val.startsWith('V');
                     } else {
                         return val.startsWith('M') && !val.startsWith('MASC') || val.startsWith('FEM') || val.startsWith('F');
+                    }
+                });
+            }
+
+            // 4. Filter by Type
+            if (typeVal !== 'all') {
+                filteredData = filteredData.filter(row => {
+                    const type = (row['Tipo de Carrera'] || row['Tipo'] || '').toLowerCase();
+                    if (typeVal === 'asfalto') {
+                        return type.includes('asfalto');
+                    } else {
+                        return type.includes('montaña') || type.includes('trail') || type.includes('obstáculos');
                     }
                 });
             }
@@ -3180,7 +3206,6 @@
                         ctx.font = 'bold 36px Outfit, Arial';
                         ctx.fillText(cat.title, cat.x, cat.y);
 
-                        const medals = ['🥇', '🥈', '🥉'];
                         const medalsColors = ['#fbbf24', '#cbd5e1', '#cd7f32'];
 
                         top3.forEach((r, i) => {
@@ -3190,8 +3215,19 @@
                             ctx.roundRect(cat.x - 230, yp - 70, 460, 110, 15);
                             ctx.fill();
 
-                            ctx.font = '45px Arial';
-                            ctx.fillText(medals[i], cat.x - 170, yp - 5);
+                            // Draw Medal Badge
+                            ctx.beginPath();
+                            ctx.arc(cat.x - 170, yp - 15, 28, 0, 2 * Math.PI);
+                            ctx.fillStyle = medalsColors[i];
+                            ctx.fill();
+                            ctx.lineWidth = 2;
+                            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+                            ctx.stroke();
+
+                            ctx.fillStyle = '#000000';
+                            ctx.font = 'bold 28px Outfit, Arial';
+                            ctx.textAlign = 'center';
+                            ctx.fillText(`${i + 1}º`, cat.x - 170, yp - 5);
 
                             ctx.fillStyle = '#ffffff';
                             ctx.font = 'bold 28px Outfit, Arial';
@@ -3239,7 +3275,12 @@
                             ctx.roundRect(list.x - 260, yp - 45, 520, 90, 10);
                             ctx.fill();
 
-                            ctx.fillStyle = i < 3 ? list.color : 'rgba(255,255,255,0.5)';
+                            let posColor = 'rgba(255,255,255,0.5)';
+                            if (i === 0) posColor = '#fbbf24';
+                            else if (i === 1) posColor = '#cbd5e1';
+                            else if (i === 2) posColor = '#cd7f32';
+
+                            ctx.fillStyle = posColor;
                             ctx.font = 'bold 24px Outfit, Arial';
                             ctx.textAlign = 'left';
                             ctx.fillText(String(i + 1).padStart(2, '0'), list.x - 240, yp + 8);
