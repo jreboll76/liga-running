@@ -1,9 +1,9 @@
-const CACHE_NAME = 'running-castello-v2';
+const CACHE_NAME = 'running-castello-v3';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
     './manifest.json',
-    './aRCHIVOS/descarga.jpeg',
+    './aRCHIVOS/logo-club.png',
     'https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js',
     'https://cdn.jsdelivr.net/npm/chart.js',
     'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
