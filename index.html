@@ -1500,9 +1500,26 @@
         <div id="proximas" class="tab-content">
             <div class="card"
                 style="margin-bottom: 2rem; border-color: var(--primary); background: rgba(16, 185, 129, 0.05);">
-                <div class="details-title"
-                    style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; color: var(--primary); text-transform: uppercase;">
-                    <span>⏭️ Calendario de Próximas Carreras</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div class="details-title"
+                        style="display: flex; align-items: center; gap: 0.5rem; color: var(--primary); text-transform: uppercase;">
+                        <span>⏭️ Calendario de Próximas Carreras</span>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn-primary"
+                            style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);"
+                            onclick="generateHDPoster('proximas')">
+                            🎨 Poster Mes
+                        </button>
+                        <button class="btn-primary"
+                            style="background: linear-gradient(135deg, var(--accent), var(--secondary)); color: white; border: none; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);"
+                            onclick="generateHDPoster('proximas_participantes')">
+                            👥 Poster Participantes
+                        </button>
+                    </div>
+                </div>
+                <div id="proximas-month-filters" class="tabs-nav" style="margin-top: 1.5rem; margin-bottom: 0; padding-bottom: 1rem; overflow-x: auto; white-space: nowrap; justify-content: flex-start; scrollbar-width: none;">
+                    <!-- Month buttons injected here -->
                 </div>
             </div>
             <div class="container" style="grid-template-columns: 1fr;">
@@ -1522,6 +1539,7 @@
     <script>
         let events = {};
         let rawExcelData = [];
+        let rawProximasData = [];
         let detectedDateKey = null;
         let detectedRaceKey = null;
         let detectedRunnerKey = null;
@@ -1905,6 +1923,7 @@
 
                 populateOtherTabs(jsonData);
                 renderCalendar();
+                rawProximasData = proximasData;
                 renderProximasCarreras(proximasData);
 
                 showScreen('dashboard-screen');
@@ -2707,6 +2726,7 @@
                 // If invalid date, group under "Por Confirmar"
                 let groupKey = "POR CONFIRMAR";
                 if (d && !isNaN(dObj.getTime())) {
+                    dObj.setHours(0, 0, 0, 0); // Normalize hours to avoid timezone skips
                     if (dObj < today) return; // Skip past races
                     groupKey = `CARRERAS DE ${monthsNames[dObj.getMonth()]} ${dObj.getFullYear()}`;
                 }
@@ -2719,21 +2739,35 @@
 
             if (Object.keys(groupedRaces).length === 0) {
                 container.innerHTML = '<div class="no-data" style="padding: 4rem; font-size: 1.2rem;">No hay próximas carreras programadas a partir de hoy.</div>';
+                const filterContainer = document.getElementById('proximas-month-filters');
+                if (filterContainer) filterContainer.innerHTML = '';
                 return;
             }
+
+            // Generate Month Filter Buttons
+            let filterHtml = '';
+            const monthKeys = Object.keys(groupedRaces);
+            monthKeys.forEach((monthGroup) => {
+                const btnLabel = monthGroup.replace('CARRERAS DE ', '');
+                filterHtml += `<button class="tab-btn" onclick="filterProximas(this, '${monthGroup}')">${btnLabel}</button>`;
+            });
+
+            const filterContainer = document.getElementById('proximas-month-filters');
+            if (filterContainer) filterContainer.innerHTML = filterHtml;
 
             let finalHtml = '';
 
             for (const [monthGroup, races] of Object.entries(groupedRaces)) {
 
-                // Add the Month Header
+                // Add the Month Header inside a grouping div
                 finalHtml += `
-                    <div style="margin-top: 2.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--primary); padding-bottom: 0.5rem; text-align: left;">
-                        <h2 style="color: var(--primary); font-size: 1.5rem; font-weight: 900; letter-spacing: 1px; margin: 0;">
-                            🕒 ${monthGroup}
-                        </h2>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="proxima-month-group" data-month="${monthGroup}" style="display: none;">
+                        <div style="margin-top: 2.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--primary); padding-bottom: 0.5rem; text-align: left;">
+                            <h2 style="color: var(--primary); font-size: 1.5rem; font-weight: 900; letter-spacing: 1px; margin: 0;">
+                                🕒 ${monthGroup}
+                            </h2>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
                 `;
 
                 // Add each race within this month
@@ -2817,10 +2851,42 @@
                     `;
                 }).join('');
 
-                finalHtml += `</div>`; // Close the month's race list
+                finalHtml += `</div></div>`; // Close the grid and the month group
             }
 
             container.innerHTML = finalHtml;
+
+            // Auto-select logic
+            if (filterContainer && monthKeys.length > 0) {
+                const currentMonthName = monthsNames[today.getMonth()];
+                // Prefer current month, if not found then default to the first available month keys
+                let defaultMonthGroup = monthKeys.find(k => k.includes(currentMonthName)) || monthKeys[0];
+                
+                const targetBtn = Array.from(filterContainer.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(defaultMonthGroup));
+                if (targetBtn) {
+                    filterProximas(targetBtn, defaultMonthGroup);
+                } else if (filterContainer.children.length > 0) {
+                    filterProximas(filterContainer.children[0], monthKeys[0]); 
+                }
+            }
+        }
+
+        function filterProximas(btn, targetMonth) {
+            // Update active button classes
+            const buttons = document.querySelectorAll('#proximas-month-filters .tab-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            // Filter blocks
+            const groups = document.querySelectorAll('.proxima-month-group');
+            groups.forEach(g => {
+                if (targetMonth === 'all' || g.getAttribute('data-month') === targetMonth) {
+                    g.style.display = 'block';
+                    g.style.animation = 'fadeIn 0.4s ease-out';
+                } else {
+                    g.style.display = 'none';
+                }
+            });
         }
 
 
@@ -3216,6 +3282,11 @@
 
                     // If one name is a subset of words of the other (min 2 tokens to avoid false positives with common names)
                     if (tokens1.length >= 2 && tokens2.length >= 2) {
+                        // Check if they share the exact first name and at least one surname
+                        if (tokens1[0] === tokens2[0]) {
+                            const sharedTokens = tokens1.filter(t => tokens2.includes(t));
+                            if (sharedTokens.length >= 2) return true;
+                        }
                         return tokens1.every(t => tokens2.includes(t)) || tokens2.every(t => tokens1.includes(t));
                     }
                     return false;
@@ -3403,43 +3474,8 @@
             btn.disabled = true;
 
             try {
-                // 1. Get current filters from UI
-                const monthVal = document.getElementById('rank-month-select').value;
-                const genderVal = document.getElementById('rank-gender-select').value;
-                const labels = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-
-                // 2. Prepare data copy and apply filters/bonus
-                let filteredData = [...rawExcelData];
-
-                // Month filter
-                if (monthVal !== 'all') {
-                    const targetMonth = parseInt(monthVal);
-                    filteredData = filteredData.filter(row => {
-                        let d = row[detectedDateKey];
-                        if (!(d instanceof Date)) d = new Date(d);
-                        return d.getMonth() === targetMonth;
-                    });
-                }
-
-                // Apply bonus to the filtered timeframe
-                applyBonusPoints(filteredData, type === 'podiums'); // Force for podiums
-
-                // Gender filter
-                if (genderVal !== 'all' && detectedGenderKey) {
-                    filteredData = filteredData.filter(row => {
-                        const val = String(row[detectedGenderKey] || '').toUpperCase();
-                        if (genderVal === 'H') {
-                            return val.startsWith('H') || val.startsWith('MASC') || val.startsWith('V');
-                        } else {
-                            return val.startsWith('M') && !val.startsWith('MASC') || val.startsWith('FEM') || val.startsWith('F');
-                        }
-                    });
-                }
-
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-
-                // Poster Dimensions
                 canvas.width = 1200;
                 canvas.height = 1600;
 
@@ -3458,20 +3494,254 @@
 
                 ctx.fillStyle = '#ffffff';
                 ctx.font = '30px Outfit, Arial';
-                let subtitle = type === 'podiums' ? 'RESUMEN DE PODIUMS' : 'CLASIFICACIÓN GENERAL';
 
-                if (monthVal !== 'all') subtitle += ` - ${labels[parseInt(monthVal)].toUpperCase()}`;
-                if (genderVal !== 'all') subtitle += genderVal === 'H' ? ' (MASCULINO)' : ' (FEMENINO)';
-                if (bonusMode) subtitle += ' [+ BONUS]';
+                if (type === 'proximas' || type === 'proximas_participantes') {
+                    let subtitle = 'PRÓXIMAS CARRERAS';
+                    if (type === 'proximas_participantes') subtitle += ' (PARTICIPANTES)';
+                    const activeBtn = document.querySelector('#proximas-month-filters .tab-btn.active');
+                    let activeMonth = activeBtn ? activeBtn.getAttribute('onclick').match(/'([^']+)'/)[1] : 'all';
 
-                ctx.fillText(subtitle, canvas.width / 2, 170);
+                    if (activeMonth !== 'all') {
+                        subtitle += ` - ${activeMonth.replace('CARRERAS DE ', '')}`;
+                    }
 
-                ctx.strokeStyle = '#10b981';
-                ctx.lineWidth = 4;
-                ctx.beginPath();
-                ctx.moveTo(canvas.width / 2 - 100, 200);
-                ctx.lineTo(canvas.width / 2 + 100, 200);
-                ctx.stroke();
+                    ctx.fillText(subtitle, canvas.width / 2, 170);
+                    ctx.strokeStyle = '#10b981';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(canvas.width / 2 - 100, 200);
+                    ctx.lineTo(canvas.width / 2 + 100, 200);
+                    ctx.stroke();
+
+                    const data = rawProximasData;
+                    if (!data || data.length === 0) throw new Error('No hay datos en próximas carreras.');
+                    const sample = data[0] || {};
+                    const keys = Object.keys(sample);
+                    const nameKey = keys.find(k => k.toLowerCase().includes('prueba') || k.toLowerCase().includes('carrera') || k.toLowerCase().includes('evento') || k.toLowerCase().includes('nombre')) || keys[0];
+                    const dateKey = keys.find(k => k.toLowerCase().includes('fecha')) || keys[1];
+                    const distKey = keys.find(k => k.toLowerCase().includes('distancia') || k.toLowerCase().includes('km'));
+                    const typeKey = keys.find(k => k.toLowerCase().includes('tipo') || k.toLowerCase().includes('modalidad'));
+                    const partKey = keys.find(k => k.toLowerCase() !== nameKey.toLowerCase() && (k.toLowerCase().includes('participante') || k.toLowerCase().includes('inscrito') || k.toLowerCase().includes('socio') || k.toLowerCase().includes('corredor') || k.toLowerCase().includes('atleta') || k.toLowerCase().includes('nombre')));
+
+                    const aggregatedRaces = {};
+                    data.forEach(row => {
+                        const raceName = String(row[nameKey] || '').trim();
+                        if (!raceName) return;
+                        let rawDate = row[dateKey];
+                        const dateStr = rawDate instanceof Date ? rawDate.getTime() : String(rawDate);
+                        const typeStr = row[typeKey] ? String(row[typeKey]) : '';
+                        const distStr = row[distKey] ? String(row[distKey]).trim() : 'NA';
+                        const raceKeyComposite = `${raceName}_${dateStr}_${distStr}_${typeStr}`;
+                        
+                        if (!aggregatedRaces[raceKeyComposite]) {
+                            aggregatedRaces[raceKeyComposite] = { ...row, _participantsList: [] };
+                        }
+
+                        // Aggregate participants
+                        if (partKey && row[partKey]) {
+                            aggregatedRaces[raceKeyComposite]._participantsList.push(String(row[partKey]));
+                        } else if (row[nameKey] && String(row[nameKey]).length > 0 && !partKey) {
+                            const runnerKey = keys.find(k => k.toLowerCase().includes('corredor') || k.toLowerCase().includes('atleta'));
+                            if (runnerKey && row[runnerKey]) {
+                                aggregatedRaces[raceKeyComposite]._participantsList.push(String(row[runnerKey]));
+                            }
+                        }
+                    });
+
+                    let uniqueData = Object.values(aggregatedRaces).sort((a, b) => {
+                        const dateA = a[dateKey] instanceof Date ? a[dateKey] : new Date(a[dateKey] || '9999-12-31');
+                        const dateB = b[dateKey] instanceof Date ? b[dateKey] : new Date(b[dateKey] || '9999-12-31');
+                        return dateA - dateB;
+                    });
+
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const monthsNames = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
+                    
+                    let renderList = [];
+                    uniqueData.forEach(race => {
+                        let dObj = race[dateKey] instanceof Date ? race[dateKey] : new Date(race[dateKey]);
+                        if (!isNaN(dObj.getTime())) {
+                            dObj.setHours(0,0,0,0);
+                            if (dObj < today) return;
+                            const groupKey = `CARRERAS DE ${monthsNames[dObj.getMonth()]} ${dObj.getFullYear()}`;
+                            if (activeMonth === 'all' || activeMonth === groupKey) {
+                                renderList.push(race);
+                            }
+                        }
+                    });
+
+                    const isParticipants = type === 'proximas_participantes';
+                    const maxItems = isParticipants ? 3 : 10;
+                    
+                    let drawY = 260;
+
+                    renderList.slice(0, maxItems).forEach((race, i) => {
+                        let participants = [];
+                        if (isParticipants) {
+                            let rawPartsArr = race._participantsList || [];
+                            const partKey = keys.find(k => k.toLowerCase() !== nameKey.toLowerCase() && (k.toLowerCase().includes('participante') || k.toLowerCase().includes('inscrito') || k.toLowerCase().includes('socio') || k.toLowerCase().includes('corredor')));
+                            if (rawPartsArr.length === 0 && partKey && race[partKey]) {
+                                rawPartsArr = [String(race[partKey])];
+                            }
+                            
+                            if (rawPartsArr.length > 0) {
+                                rawPartsArr.forEach(rawParts => {
+                                    rawParts.split(/[\n,;]/).forEach(p => {
+                                        const cleanName = p.replace(/^\s*\d+[\.\-\)]?\s*/, '')
+                                            .replace(/[\u1000-\uFFFF]+/g, '')
+                                            .replace(/[^\w\s\u00C0-\u024F]/g, '')
+                                            .replace(/\d+/g, '')
+                                            .trim();
+                                        if (cleanName.length > 2 && !participants.includes(cleanName)) {
+                                            participants.push(cleanName);
+                                        }
+                                    });
+                                });
+                            }
+                        }
+
+                        let rows = isParticipants ? Math.ceil(participants.length / 4) : 0;
+                        let boxHeight = 105;
+                        if (isParticipants) {
+                            boxHeight += rows > 0 ? (rows * 40 + 60) : 70;
+                        }
+
+                        // Prevent drawing outside the canvas
+                        if (drawY + boxHeight > canvas.height - 100) return;
+
+                        ctx.fillStyle = 'rgba(255,255,255,0.03)';
+                        ctx.beginPath();
+                        ctx.roundRect(100, drawY, 1000, boxHeight, 15);
+                        ctx.fill();
+
+                        const typeStr = String(race[typeKey] || '');
+                        const isTrail = typeStr.toLowerCase().includes('trail') || typeStr.toLowerCase().includes('montaña');
+                        const accentColor = isTrail ? '#fbbf24' : '#ef4444';
+
+                        ctx.strokeStyle = accentColor + '44';
+                        ctx.lineWidth = 4;
+                        ctx.beginPath();
+                        ctx.roundRect(100, drawY, 1000, boxHeight, 15);
+                        ctx.stroke();
+
+                        let displayDate = '--/--/----';
+                        let rawDate = race[dateKey];
+                        if (rawDate) {
+                            const dateObj = rawDate instanceof Date ? rawDate : new Date(rawDate);
+                            if (!isNaN(dateObj.getTime())) {
+                                displayDate = dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                            }
+                        }
+                        
+                        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                        ctx.font = 'bold 22px Outfit, Arial';
+                        ctx.textAlign = 'left';
+                        ctx.fillText(`📅 ${displayDate}`, 130, drawY + 40);
+
+                        ctx.fillStyle = accentColor;
+                        ctx.fillText(`${isTrail ? '⛰️' : '🛣️'} ${typeStr || 'CARRERA'}`, 330, drawY + 40);
+
+                        ctx.fillStyle = '#ffffff';
+                        ctx.font = 'bold 36px Outfit, Arial';
+                        const nameStr = (race[nameKey] || 'Próxima Carrera');
+                        ctx.fillText(nameStr.substring(0, 42), 130, drawY + 85);
+
+                        const distStr = race[distKey] ? `${race[distKey]} KM` : '';
+                        if (distStr) {
+                            ctx.fillStyle = '#10b981';
+                            ctx.textAlign = 'right';
+                            ctx.font = 'bold 42px Outfit, Arial';
+                            ctx.fillText(distStr, 1070, drawY + 75);
+                        }
+
+                        if (isParticipants) {
+                            ctx.fillStyle = '#10b981';
+                            ctx.textAlign = 'left';
+                            ctx.font = 'bold 20px Outfit, Arial';
+                            ctx.fillText(`🏆 SOCI@S PARTICIPANTES (${participants.length})`, 130, drawY + 135);
+
+                            if (participants.length > 0) {
+                                ctx.font = '18px Outfit, Arial';
+                                participants.forEach((p, idx) => {
+                                    const col = idx % 4;
+                                    const row = Math.floor(idx / 4);
+                                    const px = 130 + (col * 230);
+                                    const py = drawY + 175 + (row * 40);
+                                    
+                                    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                                    ctx.beginPath();
+                                    ctx.roundRect(px, py - 22, 210, 30, 15);
+                                    ctx.fill();
+
+                                    ctx.fillStyle = '#ffffff';
+                                    ctx.fillText(`👤 ${p.substring(0, 18)}`, px + 10, py);
+                                });
+                            } else {
+                                ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                                ctx.font = 'italic 18px Outfit, Arial';
+                                ctx.fillText('Sin inscritos confirmados.', 130, drawY + 165);
+                            }
+                        }
+
+                        drawY += boxHeight + 20;
+                    });
+
+                    if (renderList.length === 0) {
+                        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                        ctx.font = 'italic 24px Outfit, Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('No hay carreras para mostrar.', canvas.width / 2, 400);
+                    } else if (renderList.length > maxItems) {
+                        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                        ctx.font = 'italic 20px Outfit, Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(`+ ${renderList.length - maxItems} carreras pendientes adicionales.`, canvas.width / 2, canvas.height - 80);
+                    }
+                } else {
+                    // EXISTING PODIUMS/RANKING LOGIC
+                    const monthVal = document.getElementById('rank-month-select').value;
+                    const genderVal = document.getElementById('rank-gender-select').value;
+                    const labels = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+                    let filteredData = [...rawExcelData];
+
+                    if (monthVal !== 'all') {
+                        const targetMonth = parseInt(monthVal);
+                        filteredData = filteredData.filter(row => {
+                            let d = row[detectedDateKey];
+                            if (!(d instanceof Date)) d = new Date(d);
+                            return d.getMonth() === targetMonth;
+                        });
+                    }
+
+                    applyBonusPoints(filteredData, type === 'podiums');
+
+                    if (genderVal !== 'all' && detectedGenderKey) {
+                        filteredData = filteredData.filter(row => {
+                            const val = String(row[detectedGenderKey] || '').toUpperCase();
+                            if (genderVal === 'H') {
+                                return val.startsWith('H') || val.startsWith('MASC') || val.startsWith('V');
+                            } else {
+                                return val.startsWith('M') && !val.startsWith('MASC') || val.startsWith('FEM') || val.startsWith('F');
+                            }
+                        });
+                    }
+
+                    let subtitle = type === 'podiums' ? 'RESUMEN DE PODIUMS' : 'CLASIFICACIÓN GENERAL';
+
+                    if (monthVal !== 'all') subtitle += ` - ${labels[parseInt(monthVal)].toUpperCase()}`;
+                    if (genderVal !== 'all') subtitle += genderVal === 'H' ? ' (MASCULINO)' : ' (FEMENINO)';
+                    if (bonusMode) subtitle += ' [+ BONUS]';
+
+                    ctx.fillText(subtitle, canvas.width / 2, 170);
+
+                    ctx.strokeStyle = '#10b981';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(canvas.width / 2 - 100, 200);
+                    ctx.lineTo(canvas.width / 2 + 100, 200);
+                    ctx.stroke();
 
                 if (type === 'podiums') {
                     const roadRaces = filteredData.filter(r => (r['Tipo de Carrera'] || r['Tipo'] || '').toLowerCase().includes('asfalto'));
@@ -3605,8 +3875,9 @@
                         });
                     });
                 }
+            } // Close the 'else' block for active type filtering
 
-                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+            ctx.fillStyle = 'rgba(255,255,255,0.2)';
                 ctx.font = '20px Outfit, Arial';
                 ctx.fillText('Generado el ' + new Date().toLocaleString() + ' - Liga Interna Running Castelló', canvas.width / 2, canvas.height - 50);
 
