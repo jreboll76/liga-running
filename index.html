@@ -1250,7 +1250,7 @@
             <h1 class="landing-title">LIGA INTERNA</h1>
             <p class="landing-subtitle">Sube el archivo Excel para ver los resultados</p>
 
-            <div class="upload-btn-wrapper" style="display: none;">
+            <div class="upload-btn-wrapper" style="margin-top: 1rem;">
                 <label for="file-input-landing" class="btn-upload">
                     📊 Seleccionar Archivo Excel
                 </label>
@@ -1554,6 +1554,31 @@
         let bonusMode = false;
         let historicalSeasons = {}; // Store processed data for previous seasons
 
+        function parseExcelDate(val) {
+            if (val instanceof Date) return val;
+            if (typeof val === 'number') {
+                return new Date((val - 25569) * 86400 * 1000);
+            }
+            if (typeof val === 'string' && val.trim() !== '') {
+                if (!isNaN(val) && !isNaN(parseFloat(val))) {
+                    return new Date((parseFloat(val) - 25569) * 86400 * 1000);
+                }
+                let d = new Date(val);
+                if (!isNaN(d.getTime())) return d;
+                
+                // Try DD/MM/YYYY parse
+                const parts = val.split(/[-/]/);
+                if (parts.length === 3) {
+                    if (parts[0].length === 4) {
+                        return new Date(parts[0], parts[1] - 1, parts[2]);
+                    } else if (parts[2].length === 4) {
+                        return new Date(parts[2], parts[1] - 1, parts[0]);
+                    }
+                }
+            }
+            return new Date(val);
+        }
+
         let calendarGrid, currentMonthDisplay, eventList, selectedDateTitle;
 
         const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -1735,9 +1760,12 @@
 
             // Reliable proxies ordered by stability for this source
             const proxies = [
+                { url: (u) => `https://proxy.cors.sh/${u}`, type: 'blob' },
+                { url: (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`, type: 'blob' },
+                { url: (u) => `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(u)}`, type: 'blob' },
+                { url: (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`, type: 'blob' },
                 { url: (u) => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`, type: 'json-data-uri' },
-                { url: (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`, type: 'blob' },
-                { url: (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`, type: 'blob' }
+                { url: (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`, type: 'blob' }
             ];
 
             // Create loading overlay
@@ -1813,7 +1841,7 @@
                 processData(data, ls, ds);
             } catch (error) {
                 console.error('Error loading Google Sheets:', error);
-                alert(`ERROR DE CONEXIÓN:\n\n${error.message}\n\nPor favor, verifica que el documento de Google Sheets sea público e inténtalo de nuevo.`);
+                alert(`ERROR DE CONEXIÓN:\n\n${error.message}\n\nLos servidores de enlace temporal (proxies CORS) están saturados o bloqueados.\n\nAlternativa: Puedes descargar el archivo desde Google Sheets manualmente (Archivo > Descargar > Microsoft Excel .xlsx) y subirlo usando el botón de carga local.`);
             } finally {
                 overlay.remove();
             }
@@ -1844,7 +1872,11 @@
                     // Strict regex for seasons: 2022-2023, 2022/2023, 22-23, 2022 2023, etc.
                     const isSeasonPattern = /\d{2,4}[-/\s]\d{2,4}/.test(trimmed);
                     const isCurrent = trimmed === firstSheetName.trim();
-                    const isProximas = trimmed.toLowerCase().includes('próxima') || trimmed.toLowerCase().includes('proxima');
+                    const isProximas = trimmed.toLowerCase().includes('próxima') || 
+                                       trimmed.toLowerCase().includes('proxima') || 
+                                       trimmed.toLowerCase().includes('poster') || 
+                                       trimmed.toLowerCase().includes('póster') || 
+                                       trimmed.toLowerCase().includes('calendario');
 
                     if (!isCurrent && isSeasonPattern) {
                         console.log(`Procesando hoja histórica: ${sheetName}`);
@@ -1906,13 +1938,7 @@
                     if (row[runnerKey]) row[runnerKey] = runnerMapping[row[runnerKey]];
 
                     let dateStr = row[dateKey];
-                    let date;
-
-                    if (dateStr instanceof Date) {
-                        date = dateStr;
-                    } else {
-                        date = new Date(dateStr);
-                    }
+                    let date = parseExcelDate(dateStr);
 
                     if (!isNaN(date.getTime())) {
                         const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
@@ -2099,8 +2125,8 @@
             const raceGroups = {};
             data.forEach(r => {
                 let d = r[detectedDateKey];
-                if (!(d instanceof Date)) d = new Date(d);
-                const dStr = d.toISOString().split('T')[0];
+                let date = parseExcelDate(d);
+                const dStr = !isNaN(date.getTime()) ? date.toISOString().split('T')[0] : 'Invalid Date';
                 const raceName = r[detectedRaceKey] || 'Sin nombre';
                 const groupKey = `${raceName}_${dStr}`;
 
@@ -2156,8 +2182,8 @@
                 const targetMonth = parseInt(monthVal);
                 filteredData = filteredData.filter(row => {
                     let d = row[detectedDateKey];
-                    if (!(d instanceof Date)) d = new Date(d);
-                    return d.getMonth() === targetMonth;
+                    let date = parseExcelDate(d);
+                    return !isNaN(date.getTime()) && date.getMonth() === targetMonth;
                 });
             }
 
@@ -2286,7 +2312,7 @@
                 if (typeof kmRaw === 'string') kmRaw = kmRaw.replace(',', '.');
                 const km = parseFloat(kmRaw) || 0;
 
-                const date = r[detectedDateKey] instanceof Date ? r[detectedDateKey] : new Date(r[detectedDateKey]);
+                const date = parseExcelDate(r[detectedDateKey]);
                 const monthYear = `${date.getMonth()}-${date.getFullYear()}`;
                 monthlyKm[monthYear] = (monthlyKm[monthYear] || 0) + km;
 
@@ -2322,7 +2348,7 @@
             // Stats for Peak Month & Consistency
             const activeMonths = Object.keys(monthlyKm).length;
             const allMonthsInData = new Set(rawExcelData.map(r => {
-                const d = r[detectedDateKey] instanceof Date ? r[detectedDateKey] : new Date(r[detectedDateKey]);
+                const d = parseExcelDate(r[detectedDateKey]);
                 return `${d.getMonth()}-${d.getFullYear()}`;
             }));
             const consistency = allMonthsInData.size > 0 ? Math.round((activeMonths / allMonthsInData.size) * 100) : 0;
@@ -2681,7 +2707,8 @@
                 const raceName = String(raceNameRaw).trim();
 
                 let rawDate = row[dateKey];
-                const dateStr = rawDate instanceof Date ? rawDate.getTime() : String(rawDate);
+                const parsedDate = parseExcelDate(rawDate);
+                const dateStr = !isNaN(parsedDate.getTime()) ? parsedDate.getTime() : String(rawDate);
                 const typeStr = row[typeKey] ? String(row[typeKey]) : '';
                 const distStr = row[distKey] ? String(row[distKey]).trim() : 'NA';
 
@@ -2707,9 +2734,11 @@
             const uniqueData = Object.values(aggregatedRaces);
 
             const sortedData = [...uniqueData].sort((a, b) => {
-                const dateA = a[dateKey] instanceof Date ? a[dateKey] : new Date(a[dateKey] || '9999-12-31');
-                const dateB = b[dateKey] instanceof Date ? b[dateKey] : new Date(b[dateKey] || '9999-12-31');
-                return dateA - dateB;
+                const dateA = parseExcelDate(a[dateKey]);
+                const dateB = parseExcelDate(b[dateKey]);
+                const timeA = !isNaN(dateA.getTime()) ? dateA.getTime() : new Date('9999-12-31').getTime();
+                const timeB = !isNaN(dateB.getTime()) ? dateB.getTime() : new Date('9999-12-31').getTime();
+                return timeA - timeB;
             });
 
             const monthsNames = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
@@ -2721,13 +2750,23 @@
 
             sortedData.forEach(race => {
                 let d = race[dateKey];
-                let dObj = d instanceof Date ? d : new Date(d);
+                let dObj = parseExcelDate(d);
 
                 // If invalid date, group under "Por Confirmar"
                 let groupKey = "POR CONFIRMAR";
                 if (d && !isNaN(dObj.getTime())) {
                     dObj.setHours(0, 0, 0, 0); // Normalize hours to avoid timezone skips
-                    if (dObj < today) return; // Skip past races
+                    
+                    const raceYear = dObj.getFullYear();
+                    const raceMonth = dObj.getMonth();
+                    const todayYear = today.getFullYear();
+                    const todayMonth = today.getMonth();
+                    
+                    // Skip races from previous months entirely (allow past races of the current month)
+                    if (raceYear < todayYear || (raceYear === todayYear && raceMonth < todayMonth)) {
+                        return;
+                    }
+                    
                     groupKey = `CARRERAS DE ${monthsNames[dObj.getMonth()]} ${dObj.getFullYear()}`;
                 }
 
@@ -2749,7 +2788,7 @@
             const monthKeys = Object.keys(groupedRaces);
             monthKeys.forEach((monthGroup) => {
                 const btnLabel = monthGroup.replace('CARRERAS DE ', '');
-                filterHtml += `<button class="tab-btn" onclick="filterProximas(this, '${monthGroup}')">${btnLabel}</button>`;
+                filterHtml += `<button class="tab-btn" data-month-group="${monthGroup}" onclick="filterProximas(this, '${monthGroup}')">${btnLabel}</button>`;
             });
 
             const filterContainer = document.getElementById('proximas-month-filters');
@@ -2777,7 +2816,7 @@
                     let displayDate = '--/--/----';
 
                     if (rawDate) {
-                        const dateObj = rawDate instanceof Date ? rawDate : new Date(rawDate);
+                        const dateObj = parseExcelDate(rawDate);
                         if (!isNaN(dateObj.getTime())) {
                             displayDate = dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
                         }
@@ -2862,7 +2901,10 @@
                 // Prefer current month, if not found then default to the first available month keys
                 let defaultMonthGroup = monthKeys.find(k => k.includes(currentMonthName)) || monthKeys[0];
                 
-                const targetBtn = Array.from(filterContainer.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(defaultMonthGroup));
+                const targetBtn = Array.from(filterContainer.querySelectorAll('.tab-btn')).find(b => {
+                    const mg = b.getAttribute('data-month-group') || b.getAttribute('onclick');
+                    return mg && mg.includes(defaultMonthGroup);
+                });
                 if (targetBtn) {
                     filterProximas(targetBtn, defaultMonthGroup);
                 } else if (filterContainer.children.length > 0) {
@@ -3012,7 +3054,8 @@
             const runnerButtonsContainer = document.getElementById('runner-buttons-container');
             if (runnerButtonsContainer) {
                 const runnersInfo = [];
-                const uniqueNames = [...new Set(data.map(r => r[detectedRunnerKey] || '').filter(n => n))].sort();
+                // Get unique names WITHOUT sorting alphabetically
+                const uniqueNames = [...new Set(data.map(r => r[detectedRunnerKey] || '').filter(n => n))];
 
                 const dKey = Object.keys(data[0] || {}).find(k => k.toLowerCase().includes('distancia'));
 
@@ -3045,6 +3088,15 @@
                 // Get full ranking to find positions
                 applyBonusPoints(data, true);
                 const fullRanking = calcRank(data, true);
+
+                // SORT BY RANK instead of alphabet
+                runnersInfo.sort((a, b) => {
+                    const rankA = fullRanking.findIndex(r => r.name === a.name);
+                    const rankB = fullRanking.findIndex(r => r.name === b.name);
+                    const posA = rankA === -1 ? 9999 : rankA;
+                    const posB = rankB === -1 ? 9999 : rankB;
+                    return posA - posB;
+                });
 
                 runnerButtonsContainer.innerHTML = runnersInfo.map(info => {
                     const avatar = info.gender === 'female' ? '🏃‍♀️' : '🏃';
@@ -3094,8 +3146,8 @@
                 const targetMonth = parseInt(monthVal);
                 filteredData = filteredData.filter(row => {
                     let d = row[detectedDateKey];
-                    if (!(d instanceof Date)) d = new Date(d);
-                    return d.getMonth() === targetMonth;
+                    let date = parseExcelDate(d);
+                    return !isNaN(date.getTime()) && date.getMonth() === targetMonth;
                 });
             }
 
@@ -3475,9 +3527,136 @@
 
             try {
                 const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
                 canvas.width = 1200;
-                canvas.height = 1600;
+                let canvasHeight = 1600;
+
+                // For proximas, we pre-calculate renderList to determine the required canvas height dynamically
+                let renderList = [];
+                let nameKey, dateKey, distKey, typeKey, partKey, keys;
+                let activeMonth = 'all';
+
+                if (type === 'proximas' || type === 'proximas_participantes') {
+                    const activeBtn = document.querySelector('#proximas-month-filters .tab-btn.active');
+                    if (activeBtn) {
+                        activeMonth = activeBtn.getAttribute('data-month-group');
+                        if (!activeMonth) {
+                            const match = activeBtn.getAttribute('onclick').match(/['"]([^'"]+)['"]/);
+                            activeMonth = match ? match[1] : 'all';
+                        }
+                    } else {
+                        activeMonth = 'all';
+                    }
+
+                    const data = rawProximasData;
+                    if (data && data.length > 0) {
+                        const sample = data[0] || {};
+                        keys = Object.keys(sample);
+                        nameKey = keys.find(k => k.toLowerCase().includes('prueba') || k.toLowerCase().includes('carrera') || k.toLowerCase().includes('evento') || k.toLowerCase().includes('nombre')) || keys[0];
+                        dateKey = keys.find(k => k.toLowerCase().includes('fecha')) || keys[1];
+                        distKey = keys.find(k => k.toLowerCase().includes('distancia') || k.toLowerCase().includes('km'));
+                        typeKey = keys.find(k => k.toLowerCase().includes('tipo') || k.toLowerCase().includes('modalidad'));
+                        partKey = keys.find(k => k.toLowerCase() !== nameKey.toLowerCase() && (k.toLowerCase().includes('participante') || k.toLowerCase().includes('inscrito') || k.toLowerCase().includes('socio') || k.toLowerCase().includes('corredor') || k.toLowerCase().includes('atleta') || k.toLowerCase().includes('nombre')));
+
+                        const aggregatedRaces = {};
+                        data.forEach(row => {
+                            const raceName = String(row[nameKey] || '').trim();
+                            if (!raceName) return;
+                            let rawDate = row[dateKey];
+                            const parsedDate = parseExcelDate(rawDate);
+                            const dateStr = !isNaN(parsedDate.getTime()) ? parsedDate.getTime() : String(rawDate);
+                            const typeStr = row[typeKey] ? String(row[typeKey]) : '';
+                            const distStr = row[distKey] ? String(row[distKey]).trim() : 'NA';
+                            const raceKeyComposite = `${raceName}_${dateStr}_${distStr}_${typeStr}`;
+                            
+                            if (!aggregatedRaces[raceKeyComposite]) {
+                                aggregatedRaces[raceKeyComposite] = { ...row, _participantsList: [] };
+                            }
+
+                            // Aggregate participants
+                            if (partKey && row[partKey]) {
+                                aggregatedRaces[raceKeyComposite]._participantsList.push(String(row[partKey]));
+                            } else if (row[nameKey] && String(row[nameKey]).length > 0 && !partKey) {
+                                const runnerKey = keys.find(k => k.toLowerCase().includes('corredor') || k.toLowerCase().includes('atleta'));
+                                if (runnerKey && row[runnerKey]) {
+                                    aggregatedRaces[raceKeyComposite]._participantsList.push(String(row[runnerKey]));
+                                }
+                            }
+                        });
+
+                        let uniqueData = Object.values(aggregatedRaces).sort((a, b) => {
+                            const dateA = parseExcelDate(a[dateKey]);
+                            const dateB = parseExcelDate(b[dateKey]);
+                            const timeA = !isNaN(dateA.getTime()) ? dateA.getTime() : new Date('9999-12-31').getTime();
+                            const timeB = !isNaN(dateB.getTime()) ? dateB.getTime() : new Date('9999-12-31').getTime();
+                            return timeA - timeB;
+                        });
+
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const monthsNames = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
+                        
+                        uniqueData.forEach(race => {
+                            let dObj = parseExcelDate(race[dateKey]);
+                            if (!isNaN(dObj.getTime())) {
+                                dObj.setHours(0,0,0,0);
+                                
+                                const raceYear = dObj.getFullYear();
+                                const raceMonth = dObj.getMonth();
+                                const todayYear = today.getFullYear();
+                                const todayMonth = today.getMonth();
+                                
+                                // Skip races from previous months entirely (allow past races of the current month)
+                                if (raceYear < todayYear || (raceYear === todayYear && raceMonth < todayMonth)) {
+                                    return;
+                                }
+                                
+                                const groupKey = `CARRERAS DE ${monthsNames[dObj.getMonth()]} ${dObj.getFullYear()}`;
+                                if (activeMonth === 'all' || activeMonth === groupKey) {
+                                    renderList.push(race);
+                                }
+                            }
+                        });
+
+                        const isParticipants = type === 'proximas_participantes';
+                        let testY = 260;
+                        renderList.forEach(race => {
+                            let participants = [];
+                            if (isParticipants) {
+                                let rawPartsArr = race._participantsList || [];
+                                const partKeyLocal = keys.find(k => k.toLowerCase() !== nameKey.toLowerCase() && (k.toLowerCase().includes('participante') || k.toLowerCase().includes('inscrito') || k.toLowerCase().includes('socio') || k.toLowerCase().includes('corredor')));
+                                if (rawPartsArr.length === 0 && partKeyLocal && race[partKeyLocal]) {
+                                    rawPartsArr = [String(race[partKeyLocal])];
+                                }
+                                
+                                if (rawPartsArr.length > 0) {
+                                    rawPartsArr.forEach(rawParts => {
+                                        rawParts.split(/[\n,;]/).forEach(p => {
+                                            const cleanName = p.replace(/^\s*\d+[\.\-\)]?\s*/, '')
+                                                .replace(/[\u1000-\uFFFF]+/g, '')
+                                                .replace(/[^\w\s\u00C0-\u024F]/g, '')
+                                                .replace(/\d+/g, '')
+                                                .trim();
+                                            if (cleanName.length > 2 && !participants.includes(cleanName)) {
+                                                participants.push(cleanName);
+                                            }
+                                        });
+                                    });
+                                }
+                            }
+
+                            let rows = isParticipants ? Math.ceil(participants.length / 4) : 0;
+                            let boxHeight = 105;
+                            if (isParticipants) {
+                                boxHeight += rows > 0 ? (rows * 40 + 60) : 70;
+                            }
+                            testY += boxHeight + 20;
+                        });
+                        canvasHeight = Math.max(1600, testY + 100);
+                    }
+                }
+
+                canvas.height = canvasHeight;
+                const ctx = canvas.getContext('2d');
 
                 // Background
                 const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -3498,8 +3677,6 @@
                 if (type === 'proximas' || type === 'proximas_participantes') {
                     let subtitle = 'PRÓXIMAS CARRERAS';
                     if (type === 'proximas_participantes') subtitle += ' (PARTICIPANTES)';
-                    const activeBtn = document.querySelector('#proximas-month-filters .tab-btn.active');
-                    let activeMonth = activeBtn ? activeBtn.getAttribute('onclick').match(/'([^']+)'/)[1] : 'all';
 
                     if (activeMonth !== 'all') {
                         subtitle += ` - ${activeMonth.replace('CARRERAS DE ', '')}`;
@@ -3513,76 +3690,18 @@
                     ctx.lineTo(canvas.width / 2 + 100, 200);
                     ctx.stroke();
 
-                    const data = rawProximasData;
-                    if (!data || data.length === 0) throw new Error('No hay datos en próximas carreras.');
-                    const sample = data[0] || {};
-                    const keys = Object.keys(sample);
-                    const nameKey = keys.find(k => k.toLowerCase().includes('prueba') || k.toLowerCase().includes('carrera') || k.toLowerCase().includes('evento') || k.toLowerCase().includes('nombre')) || keys[0];
-                    const dateKey = keys.find(k => k.toLowerCase().includes('fecha')) || keys[1];
-                    const distKey = keys.find(k => k.toLowerCase().includes('distancia') || k.toLowerCase().includes('km'));
-                    const typeKey = keys.find(k => k.toLowerCase().includes('tipo') || k.toLowerCase().includes('modalidad'));
-                    const partKey = keys.find(k => k.toLowerCase() !== nameKey.toLowerCase() && (k.toLowerCase().includes('participante') || k.toLowerCase().includes('inscrito') || k.toLowerCase().includes('socio') || k.toLowerCase().includes('corredor') || k.toLowerCase().includes('atleta') || k.toLowerCase().includes('nombre')));
-
-                    const aggregatedRaces = {};
-                    data.forEach(row => {
-                        const raceName = String(row[nameKey] || '').trim();
-                        if (!raceName) return;
-                        let rawDate = row[dateKey];
-                        const dateStr = rawDate instanceof Date ? rawDate.getTime() : String(rawDate);
-                        const typeStr = row[typeKey] ? String(row[typeKey]) : '';
-                        const distStr = row[distKey] ? String(row[distKey]).trim() : 'NA';
-                        const raceKeyComposite = `${raceName}_${dateStr}_${distStr}_${typeStr}`;
-                        
-                        if (!aggregatedRaces[raceKeyComposite]) {
-                            aggregatedRaces[raceKeyComposite] = { ...row, _participantsList: [] };
-                        }
-
-                        // Aggregate participants
-                        if (partKey && row[partKey]) {
-                            aggregatedRaces[raceKeyComposite]._participantsList.push(String(row[partKey]));
-                        } else if (row[nameKey] && String(row[nameKey]).length > 0 && !partKey) {
-                            const runnerKey = keys.find(k => k.toLowerCase().includes('corredor') || k.toLowerCase().includes('atleta'));
-                            if (runnerKey && row[runnerKey]) {
-                                aggregatedRaces[raceKeyComposite]._participantsList.push(String(row[runnerKey]));
-                            }
-                        }
-                    });
-
-                    let uniqueData = Object.values(aggregatedRaces).sort((a, b) => {
-                        const dateA = a[dateKey] instanceof Date ? a[dateKey] : new Date(a[dateKey] || '9999-12-31');
-                        const dateB = b[dateKey] instanceof Date ? b[dateKey] : new Date(b[dateKey] || '9999-12-31');
-                        return dateA - dateB;
-                    });
-
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    const monthsNames = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
-                    
-                    let renderList = [];
-                    uniqueData.forEach(race => {
-                        let dObj = race[dateKey] instanceof Date ? race[dateKey] : new Date(race[dateKey]);
-                        if (!isNaN(dObj.getTime())) {
-                            dObj.setHours(0,0,0,0);
-                            if (dObj < today) return;
-                            const groupKey = `CARRERAS DE ${monthsNames[dObj.getMonth()]} ${dObj.getFullYear()}`;
-                            if (activeMonth === 'all' || activeMonth === groupKey) {
-                                renderList.push(race);
-                            }
-                        }
-                    });
+                    if (!rawProximasData || rawProximasData.length === 0) throw new Error('No hay datos en próximas carreras.');
 
                     const isParticipants = type === 'proximas_participantes';
-                    const maxItems = isParticipants ? 3 : 10;
-                    
                     let drawY = 260;
 
-                    renderList.slice(0, maxItems).forEach((race, i) => {
+                    renderList.forEach((race, i) => {
                         let participants = [];
                         if (isParticipants) {
                             let rawPartsArr = race._participantsList || [];
-                            const partKey = keys.find(k => k.toLowerCase() !== nameKey.toLowerCase() && (k.toLowerCase().includes('participante') || k.toLowerCase().includes('inscrito') || k.toLowerCase().includes('socio') || k.toLowerCase().includes('corredor')));
-                            if (rawPartsArr.length === 0 && partKey && race[partKey]) {
-                                rawPartsArr = [String(race[partKey])];
+                            const partKeyLocal = keys.find(k => k.toLowerCase() !== nameKey.toLowerCase() && (k.toLowerCase().includes('participante') || k.toLowerCase().includes('inscrito') || k.toLowerCase().includes('socio') || k.toLowerCase().includes('corredor')));
+                            if (rawPartsArr.length === 0 && partKeyLocal && race[partKeyLocal]) {
+                                rawPartsArr = [String(race[partKeyLocal])];
                             }
                             
                             if (rawPartsArr.length > 0) {
@@ -3607,9 +3726,6 @@
                             boxHeight += rows > 0 ? (rows * 40 + 60) : 70;
                         }
 
-                        // Prevent drawing outside the canvas
-                        if (drawY + boxHeight > canvas.height - 100) return;
-
                         ctx.fillStyle = 'rgba(255,255,255,0.03)';
                         ctx.beginPath();
                         ctx.roundRect(100, drawY, 1000, boxHeight, 15);
@@ -3628,7 +3744,7 @@
                         let displayDate = '--/--/----';
                         let rawDate = race[dateKey];
                         if (rawDate) {
-                            const dateObj = rawDate instanceof Date ? rawDate : new Date(rawDate);
+                            const dateObj = parseExcelDate(rawDate);
                             if (!isNaN(dateObj.getTime())) {
                                 displayDate = dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
                             }
@@ -3692,11 +3808,6 @@
                         ctx.font = 'italic 24px Outfit, Arial';
                         ctx.textAlign = 'center';
                         ctx.fillText('No hay carreras para mostrar.', canvas.width / 2, 400);
-                    } else if (renderList.length > maxItems) {
-                        ctx.fillStyle = 'rgba(255,255,255,0.5)';
-                        ctx.font = 'italic 20px Outfit, Arial';
-                        ctx.textAlign = 'center';
-                        ctx.fillText(`+ ${renderList.length - maxItems} carreras pendientes adicionales.`, canvas.width / 2, canvas.height - 80);
                     }
                 } else {
                     // EXISTING PODIUMS/RANKING LOGIC
@@ -3710,8 +3821,8 @@
                         const targetMonth = parseInt(monthVal);
                         filteredData = filteredData.filter(row => {
                             let d = row[detectedDateKey];
-                            if (!(d instanceof Date)) d = new Date(d);
-                            return d.getMonth() === targetMonth;
+                            let date = parseExcelDate(d);
+                            return !isNaN(date.getTime()) && date.getMonth() === targetMonth;
                         });
                     }
 
