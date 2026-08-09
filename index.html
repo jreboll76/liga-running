@@ -1196,9 +1196,69 @@
             transform: scale(1.05);
         }
 
-        @keyframes shine {
-            100% {
-                left: 200%;
+        /* Evolution Screen Styles */
+        #evolution-screen .container {
+            display: flex;
+            align-items: stretch;
+            height: calc(100vh - 12rem);
+            min-height: 600px;
+        }
+
+        .evo-runner-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.4rem 0.6rem;
+            border-radius: 0.4rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .evo-runner-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .evo-runner-checkbox {
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        #evo-runners-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #evo-runners-list::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+            border-radius: 2px;
+        }
+
+        #evo-runners-list::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        #evolution-screen select option {
+            background-color: #0f172a;
+            color: #ffffff;
+        }
+
+        @media (max-width: 900px) {
+            #evolution-screen .container {
+                flex-direction: column !important;
+                height: auto !important;
+                min-height: auto !important;
+            }
+            #evolution-screen .container > .card:first-child {
+                width: 100% !important;
+                max-height: 380px !important;
+            }
+            #evolution-screen .container > .card:last-child {
+                height: 500px !important;
+                min-height: 500px !important;
             }
         }
     </style>
@@ -1290,6 +1350,7 @@
         <div class="tabs-nav">
             <button class="tab-btn active" onclick="switchTab('calendario', event)">Calendario</button>
             <button class="tab-btn" onclick="switchTab('clasificacion', event)">🏆 Clasificación</button>
+            <button class="tab-btn" onclick="switchTab('strava_tab', event)">⚡ Strava</button>
             <button class="tab-btn" onclick="switchTab('carreras', event)">🏁 Resultados</button>
             <button class="tab-btn" onclick="switchTab('corredores', event)">👤 Corredores</button>
             <button class="tab-btn" onclick="switchTab('podiums', event)">🏅 Podiums</button>
@@ -1325,6 +1386,13 @@
                 style="margin-bottom: 2rem; border-color: var(--primary); background: rgba(99, 102, 241, 0.05);">
                 <div
                     style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                    <select id="rank-source-select" class="tab-btn"
+                        style="background: var(--primary); color: white; outline: none; border: 1px solid var(--primary); font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);"
+                        onchange="switchClassificationSource(this.value)">
+                        <option value="manual" style="background: var(--card-bg); color: var(--text-main);">📝 Clasificación Formulario</option>
+                        <option value="strava" style="background: var(--card-bg); color: var(--text-main);">⚡ Clasificación Strava</option>
+                    </select>
+
                     <div class="details-title" style="margin-bottom: 0;">📅 Filtrar por Mes</div>
                     <select id="rank-month-select" class="tab-btn"
                         style="background: var(--card-bg); color: var(--text-main); outline: none; border: 1px solid var(--primary);"
@@ -1359,6 +1427,12 @@
                         <option value="asfalto">🛣️ Asfalto</option>
                         <option value="trail">⛰️ Trail</option>
                     </select>
+
+                    <button id="evolution-chart-btn" class="tab-btn"
+                        style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);"
+                        onclick="showManualEvolutionScreen()">
+                        📈 Ver Evolución Clasificación
+                    </button>
 
                     <button class="tab-btn"
                         style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);"
@@ -1405,6 +1479,85 @@
                     <div id="ranking-trail-list" class="table-container">
                         <div class="no-data">Sube un archivo para ver el ranking.</div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="strava_tab" class="tab-content">
+            <!-- Summary Stats Header -->
+            <div class="container" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; width: 100%; max-width: 900px; margin-left: auto; margin-right: auto; padding: 0;">
+                <div class="card" style="border-color: #f97316; background: rgba(249, 115, 22, 0.03); display: flex; align-items: center; gap: 1rem; padding: 1.5rem;">
+                    <div style="font-size: 2.5rem; color: #f97316;">🏃‍♂️</div>
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Distancia Club</div>
+                        <div id="strava-total-km" style="font-size: 1.8rem; font-weight: 850; color: var(--text);">0.0 km</div>
+                    </div>
+                </div>
+                <div class="card" style="border-color: #f97316; background: rgba(249, 115, 22, 0.03); display: flex; align-items: center; gap: 1rem; padding: 1.5rem;">
+                    <div style="font-size: 2.5rem; color: #f97316;">👥</div>
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Corredores Activos</div>
+                        <div id="strava-total-runners" style="font-size: 1.8rem; font-weight: 850; color: var(--text);">0</div>
+                    </div>
+                </div>
+                <div class="card" style="border-color: #f97316; background: rgba(249, 115, 22, 0.03); display: flex; align-items: center; gap: 1rem; padding: 1.5rem;">
+                    <div style="font-size: 2.5rem; color: #f97316;">👑</div>
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Líder del Periodo</div>
+                        <div id="strava-leader-name" style="font-size: 1.2rem; font-weight: 800; color: var(--accent); line-height: 1.2; margin-top: 0.2rem;">Nadie</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Period Selection and Toggles -->
+            <div class="card" style="margin-bottom: 2rem; border-color: #f97316; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; width: 100%; max-width: 900px; margin: 0 auto 2rem auto; box-sizing: border-box;">
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="tab-btn active" id="strava-btn-semanal" onclick="changeStravaMode('semanal')" style="background: rgba(249, 115, 22, 0.15); color: #f97316; border-color: #f97316;">📅 Semanal</button>
+                    <button class="tab-btn" id="strava-btn-mensual" onclick="changeStravaMode('mensual')">🗓️ Mensual</button>
+                    <button class="tab-btn" id="strava-btn-anual" onclick="changeStravaMode('anual')">🗓️ Anual</button>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-weight: 600; color: var(--text-muted); font-size: 0.9rem;">Clasificación:</span>
+                        <select id="strava-metric-select" onchange="changeStravaSortMetric(this.value)" style="background: var(--card-bg); color: var(--text); border: 1px solid var(--glass-border); padding: 0.6rem 1.2rem; border-radius: 0.75rem; font-size: 0.9rem; font-weight: bold; cursor: pointer; outline: none; transition: border-color 0.2s;">
+                            <option value="distance">⚡ Kilómetros Totales</option>
+                            <option value="elevation">⛰️ Desnivel Acumulado</option>
+                            <option value="runs">🏃‍♂️ Actividades</option>
+                            <option value="longest">🚀 Tirada más larga</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-weight: 600; color: var(--text-muted); font-size: 0.9rem;">Periodo:</span>
+                        <select id="strava-period-select" onchange="updateStravaLeaderboard()" style="background: var(--card-bg); color: var(--text); border: 1px solid var(--glass-border); padding: 0.6rem 1.2rem; border-radius: 0.75rem; font-size: 0.9rem; font-weight: bold; cursor: pointer; outline: none; transition: border-color 0.2s;">
+                            <option>Sin periodos disponibles</option>
+                        </select>
+                    </div>
+                    <button id="strava-evolution-chart-btn" class="tab-btn"
+                        style="background: linear-gradient(135deg, #f97316, var(--accent)); color: white; border: none; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);"
+                        onclick="showStravaEvolutionScreen()">
+                        📈 Ver Evolución Strava
+                    </button>
+
+                    <button class="tab-btn"
+                        style="background: linear-gradient(135deg, #f97316, var(--accent)); color: white; border: none; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);"
+                        onclick="generateHDPoster('strava')">
+                        🎨 Generar JPG HD (Poster)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Achievements / Menciones Especiales Container -->
+            <div id="strava-achievements-container" class="container" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; width: 100%; max-width: 900px; margin-left: auto; margin-right: auto; padding: 0; display: none;">
+            </div>
+
+            <!-- Leaderboard Table Container -->
+            <div class="card" style="border-color: #f97316; width: 100%; max-width: 900px; margin: 0 auto; box-sizing: border-box;">
+                <div class="details-title" style="color: #f97316; display: flex; align-items: center; gap: 0.5rem; text-shadow: 0 0 10px rgba(249, 115, 22, 0.2);">
+                    <span>⚡ Clasificación de Kilómetros Strava</span>
+                    <span id="strava-period-label" style="font-size: 0.8rem; opacity: 0.7; font-weight: normal;">(Cargando...)</span>
+                </div>
+                <div id="strava-ranking-list" class="table-container" style="margin-top: 1rem; width: 100%;">
+                    <div class="no-data">Sincroniza datos de Strava para ver la clasificación.</div>
                 </div>
             </div>
         </div>
@@ -1532,6 +1685,75 @@
 
     </div> <!-- Close Dashboard Screen -->
 
+    <!-- Evolution Screen -->
+    <div id="evolution-screen" style="display: none; min-height: 100vh; background: var(--bg); color: var(--text-main); flex-direction: column;">
+        <header style="padding: 3rem 2rem 2rem 2rem; text-align: center; background: radial-gradient(circle at top, var(--aurora-2), transparent 70%); position: relative; border-bottom: 1px solid var(--glass-border);">
+            <button class="back-btn" onclick="showScreen('dashboard-screen')" style="position: absolute; top: 2rem; left: 2rem;"><span>🏠</span> Inicio</button>
+            <h1 style="margin: 0; font-size: 2.2rem; font-weight: 800;">📈 EVOLUCIÓN DE LA CLASIFICACIÓN</h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.5rem; opacity: 0.8;">Histórico del puesto de los corredores en la clasificación</p>
+        </header>
+
+        <div class="container" style="flex: 1; display: flex; gap: 2rem; padding: 2rem; max-width: 1400px; margin: 0 auto; width: 100%; box-sizing: border-box; align-items: stretch;">
+            <!-- Sidebar -->
+            <div class="card" style="width: 320px; flex-shrink: 0; display: flex; flex-direction: column; gap: 1.2rem; padding: 1.5rem; max-height: 700px; border-color: var(--glass-border); background: var(--card-bg);">
+                <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label id="evo-filter1-label" style="font-size: 0.75rem; font-weight: 700; color: var(--primary); letter-spacing: 0.05em;">CATEGORÍA</label>
+                    <select id="evo-filter1-select" class="tab-btn" style="width: 100%; padding: 0.6rem; border-radius: 0.5rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; cursor: pointer;" onchange="onFilter1Change()">
+                    </select>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label id="evo-filter2-label" style="font-size: 0.75rem; font-weight: 700; color: var(--primary); letter-spacing: 0.05em;">SEXO</label>
+                    <select id="evo-filter2-select" class="tab-btn" style="width: 100%; padding: 0.6rem; border-radius: 0.5rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; cursor: pointer;" onchange="onEvoFiltersChange()">
+                    </select>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label id="evo-filter3-label" style="font-size: 0.75rem; font-weight: 700; color: var(--primary); letter-spacing: 0.05em;">LÍNEA DE TIEMPO</label>
+                    <select id="evo-filter3-select" class="tab-btn" style="width: 100%; padding: 0.6rem; border-radius: 0.5rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); color: var(--text-main); outline: none; cursor: pointer;" onchange="updateEvolutionChart()">
+                    </select>
+                </div>
+
+                <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.05); margin: 0.2rem 0;">
+
+                <div style="display: flex; flex-direction: column; flex: 1; overflow: hidden; gap: 0.6rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--primary); letter-spacing: 0.05em;">FILTRAR CORREDORES</label>
+                        <span id="evo-selected-count" style="font-size: 0.75rem; color: var(--text-muted);">0 seleccionados</span>
+                    </div>
+                    
+                    <input type="text" id="evo-search-input" placeholder="Buscar por nombre..." 
+                        style="width: 100%; padding: 0.6rem 0.8rem; border-radius: 0.5rem; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: var(--text-main); font-size: 0.85rem; outline: none; box-sizing: border-box;"
+                        oninput="filterEvolutionRunnersList()">
+
+                    <div style="display: flex; gap: 0.4rem;">
+                        <button class="tab-btn" style="flex: 1; padding: 0.3rem; font-size: 0.7rem; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.02);" onclick="selectTopRunners(10)">Top 10</button>
+                        <button class="tab-btn" style="flex: 1; padding: 0.3rem; font-size: 0.7rem; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.02);" onclick="selectAllRunners(true)">Todos</button>
+                        <button class="tab-btn" style="flex: 1; padding: 0.3rem; font-size: 0.7rem; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.02);" onclick="selectAllRunners(false)">Ninguno</button>
+                    </div>
+
+                    <!-- Scrollable list -->
+                    <div id="evo-runners-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.3rem; padding-right: 0.2rem;">
+                        <!-- Checkboxes injected dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Panel -->
+            <div class="card" style="flex: 1; display: flex; flex-direction: column; justify-content: stretch; position: relative; border-color: var(--glass-border); background: var(--card-bg); padding: 1.5rem; min-height: 500px;">
+                <div id="evo-chart-container" style="position: relative; width: 100%; height: 100%; flex: 1;">
+                    <canvas id="evolutionChartCanvas"></canvas>
+                </div>
+                <!-- Empty State -->
+                <div id="evo-chart-empty" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--card-bg); border-radius: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; z-index: 10; padding: 2rem; box-sizing: border-box;">
+                    <div style="font-size: 3rem;">📈</div>
+                    <div style="font-weight: 700; color: var(--text-main); font-size: 1.2rem;">Compara la Progresión</div>
+                    <div style="font-size: 0.9rem; color: var(--text-muted); text-align: center; max-width: 320px;">Selecciona corredores en el panel de la izquierda para trazar sus puestos en la gráfica de evolución.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Libraries -->
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1539,6 +1761,14 @@
     <script>
         let events = {};
         let rawExcelData = [];
+        let rawStravaData = [];
+        let activeClassificationSource = 'manual';
+        let activeStravaMode = 'semanal';
+        let activeStravaSortMetric = 'distance';
+
+        function getActiveClassificationData() {
+            return activeClassificationSource === 'strava' ? rawStravaData : rawExcelData;
+        }
         let rawProximasData = [];
         let detectedDateKey = null;
         let detectedRaceKey = null;
@@ -1553,6 +1783,24 @@
         let manualRaceMappings = JSON.parse(localStorage.getItem('raceMappings') || '{}');
         let bonusMode = false;
         let historicalSeasons = {}; // Store processed data for previous seasons
+
+        function formatDateToYYYYMMDD(val) {
+            if (!val) return '';
+            if (val instanceof Date) {
+                if (val.getUTCHours() === 0 && val.getUTCMinutes() === 0) {
+                    const yyyy = val.getUTCFullYear();
+                    const mm = String(val.getUTCMonth() + 1).padStart(2, '0');
+                    const dd = String(val.getUTCDate()).padStart(2, '0');
+                    return `${yyyy}-${mm}-${dd}`;
+                } else {
+                    const yyyy = val.getFullYear();
+                    const mm = String(val.getMonth() + 1).padStart(2, '0');
+                    const dd = String(val.getDate()).padStart(2, '0');
+                    return `${yyyy}-${mm}-${dd}`;
+                }
+            }
+            return String(val).split('T')[0].trim();
+        }
 
         function parseExcelDate(val) {
             if (val instanceof Date) return val;
@@ -1696,6 +1944,8 @@
             document.getElementById('convenios-screen').style.display = 'none';
             document.getElementById('landing-screen').style.display = 'none';
             document.getElementById('dashboard-screen').style.display = 'none';
+            const evoScreen = document.getElementById('evolution-screen');
+            if (evoScreen) evoScreen.style.display = 'none';
 
             // Show target screen
             const target = document.getElementById(screenId);
@@ -1756,7 +2006,7 @@
         async function loadFromGoogleSheets() {
             const spreadsheetId = "1id85u0n11QKVzR_OJJGOjeEEmi9MOWJ6UOWqFDu6Se4";
             // Removed gid to fetch all sheets in the workbook
-            const exportUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=xlsx`;
+            const exportUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=xlsx&_=${Date.now()}`;
 
             // Reliable proxies ordered by stability for this source
             const proxies = [
@@ -1916,41 +2166,67 @@
                 detectedRunnerKey = runnerKey;
                 detectedGenderKey = columns.find(k => k.toLowerCase().includes('sexo') || k.toLowerCase().includes('género') || k.toLowerCase().includes('genero'));
                 detectedPosKey = columns.find(k => k.toLowerCase().includes('puesto') || k.toLowerCase().includes('posicion') || k.toLowerCase().includes('posición') || k.toLowerCase().includes('general') || k.toLowerCase() === 'pos');
+                
                 rawExcelData = jsonData;
+                unifyDataSetNames(rawExcelData);
+
+                // Check if 'Strava' sheet exists in the workbook
+                const stravaSheetName = workbook.SheetNames.find(name => name.trim().toLowerCase() === 'strava');
+                if (stravaSheetName) {
+                    console.log("Pestaña de Strava encontrada.");
+                    const stravaWorksheet = workbook.Sheets[stravaSheetName];
+                    const rawRows = XLSX.utils.sheet_to_json(stravaWorksheet);
+                    unifyDataSetNames(rawRows);
+                    
+                    if (rawRows.length > 0) {
+                        // Deduplicate rawRows: keep only the latest row for each runner/week
+                        const keys = Object.keys(rawRows[0] || {});
+                        const runnerKey = keys.find(k => k.toLowerCase().includes('nombre') && !k.toLowerCase().includes('prueba')) || 'Nombre, Apellidos';
+                        const dateKey = keys.find(k => k.toLowerCase().includes('fecha') && !k.toLowerCase().includes('temporal')) || 'Fecha del Evento';
+                        
+                        const seen = new Set();
+                        const deduplicated = [];
+                        // Process from bottom to top to keep the latest sync
+                        for (let i = rawRows.length - 1; i >= 0; i--) {
+                            const item = rawRows[i];
+                            const name = item[runnerKey];
+                            let dateStr = "";
+                            const val = item[dateKey];
+                            if (val) {
+                                dateStr = formatDateToYYYYMMDD(val);
+                            }
+                            
+                            if (!name || !dateStr) continue;
+                            const uniqueKey = `${name}_${dateStr}`;
+                            if (!seen.has(uniqueKey)) {
+                                seen.add(uniqueKey);
+                                deduplicated.push(item);
+                            }
+                        }
+                        rawStravaData = deduplicated.reverse();
+                    } else {
+                        rawStravaData = [];
+                    }
+                } else {
+                    console.log("Pestaña de Strava no encontrada.");
+                    rawStravaData = [];
+                }
 
                 if (!dateKey) {
                     alert('No se encontró una columna de fecha válida.');
                     return;
                 }
 
-                events = {}; // Reset events
+                const activeData = getActiveClassificationData();
+                rebuildEvents(activeData);
+                populateOtherTabs(activeData);
 
-                // Pre-process races and runners to unify names
-                const rawRaceNames = jsonData.map(r => r[raceKey] || '').filter(n => n);
-                const rawRunnerNames = jsonData.map(r => r[runnerKey] || '').filter(n => n);
-
-                const raceMapping = unifyNames(rawRaceNames);
-                const runnerMapping = unifyRunnerNames(rawRunnerNames);
-
-                jsonData.forEach(row => {
-                    // Update the race and runner names to unified ones
-                    if (row[raceKey]) row[raceKey] = raceMapping[row[raceKey]];
-                    if (row[runnerKey]) row[runnerKey] = runnerMapping[row[runnerKey]];
-
-                    let dateStr = row[dateKey];
-                    let date = parseExcelDate(dateStr);
-
-                    if (!isNaN(date.getTime())) {
-                        const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-                        if (!events[key]) events[key] = [];
-                        events[key].push(row);
-                    }
-                });
-
-                populateOtherTabs(jsonData);
                 renderCalendar();
                 rawProximasData = proximasData;
                 renderProximasCarreras(proximasData);
+
+                // Inicializar clasificación de Strava
+                populateStravaPeriods();
 
                 showScreen('dashboard-screen');
             } catch (err) {
@@ -2150,12 +2426,13 @@
         }
 
         function updateMonthlyRankings() {
-            if (rawExcelData.length === 0) return;
+            const dataToUse = getActiveClassificationData();
+            if (dataToUse.length === 0) return;
             const monthVal = document.getElementById('rank-month-select').value;
             const genderVal = document.getElementById('rank-gender-select').value;
             const typeVal = document.getElementById('rank-type-select').value;
 
-            let filteredData = rawExcelData;
+            let filteredData = dataToUse;
             const labels = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
             let selectedLabel = monthVal === 'all' ? '(Total)' : `(${labels[parseInt(monthVal)]})`;
 
@@ -2296,12 +2573,13 @@
                 return;
             }
 
-            const runnerData = rawExcelData.filter(r => (r[detectedRunnerKey] || '') === runnerName);
+            const dataToUse = getActiveClassificationData();
+            const runnerData = dataToUse.filter(r => (r[detectedRunnerKey] || '') === runnerName);
 
             let totalRoadKm = 0;
             let totalTrailKm = 0;
             const raceHistory = [];
-            const dKey = Object.keys(rawExcelData[0] || {}).find(k => k.toLowerCase().includes('distancia'));
+            const dKey = Object.keys(dataToUse[0] || {}).find(k => k.toLowerCase().includes('distancia'));
 
             // Stats for Peak Month & Consistency
             const monthlyKm = {};
@@ -2347,15 +2625,15 @@
 
             // Stats for Peak Month & Consistency
             const activeMonths = Object.keys(monthlyKm).length;
-            const allMonthsInData = new Set(rawExcelData.map(r => {
+            const allMonthsInData = new Set(dataToUse.map(r => {
                 const d = parseExcelDate(r[detectedDateKey]);
                 return `${d.getMonth()}-${d.getFullYear()}`;
             }));
             const consistency = allMonthsInData.size > 0 ? Math.round((activeMonths / allMonthsInData.size) * 100) : 0;
 
             // Calculate Overall Ranking Position
-            applyBonusPoints(rawExcelData, true); // Force bonus calculation for general ranking
-            const allRaces = rawExcelData;
+            applyBonusPoints(dataToUse, true); // Force bonus calculation for general ranking
+            const allRaces = dataToUse;
             const fullRanking = calcRank(allRaces, true); // Get full general ranking
             const runnerRankPos = fullRanking.findIndex(r => r.name === runnerName) + 1;
             const runnerPoints = (fullRanking.find(r => r.name === runnerName) || {}).totalScore || 0;
@@ -2614,6 +2892,8 @@
                     </thead>
                     <tbody>
                         ${rankingData.map((r, idx) => {
+                const isStravaSynced = rawStravaData && rawStravaData.length > 0 && rawStravaData.some(act => act[detectedRunnerKey] === r.name);
+                const stravaBadge = isStravaSynced ? ' <span style="color: #f97316; font-size: 0.85rem; margin-left: 4px; vertical-align: middle;" title="Sincronizado con Strava">⚡</span>' : '';
                 const raceListHtml = r.races.map(race => `
                                 <div class="tooltip-race-item">
                                     <span>${race.race}</span>
@@ -2630,7 +2910,7 @@
                                     </td>
                                     <td style="padding: 1rem; font-weight: 500;">
                                         <span class="runner-name">
-                                            ${r.name}
+                                            ${r.name}${stravaBadge}
                                             <div class="runner-tooltip">
                                                 <div style="font-weight: 700; margin-bottom: 0.5rem; border-bottom: 1px solid var(--primary); padding-bottom: 0.25rem;">
                                                     Desglose de puntos:
@@ -2654,7 +2934,7 @@
                                     </td>
                                     <td style="padding: 1rem; font-weight: 500;">
                                         <span class="runner-name">
-                                            ${r.name}
+                                            ${r.name}${stravaBadge}
                                             <div class="runner-tooltip">
                                                 <div style="font-weight: 700; margin-bottom: 0.5rem; border-bottom: 1px solid var(--primary); padding-bottom: 0.25rem;">
                                                     Carreras realizadas:
@@ -2994,6 +3274,83 @@
 
             return mapping;
         }
+
+        function unifyDataSetNames(dataset) {
+            if (!dataset || dataset.length === 0) return;
+            const sample = dataset[0];
+            const keys = Object.keys(sample);
+            const rKey = keys.find(k => k.toLowerCase().includes('nombre de la prueba') || k.toLowerCase().includes('prueba') || k.toLowerCase().includes('carrera')) || keys[1];
+            const nKey = keys.find(k =>
+                k.toLowerCase().includes('nombre, apellidos') ||
+                k.toLowerCase().includes('corredor') ||
+                k.toLowerCase().includes('participante') ||
+                (k.toLowerCase() === 'nombre' && k !== rKey)
+            ) || keys[2];
+
+            // Clean any screen-reader duplication pattern (e.g. "NameName" or "NameName") in runner names
+            dataset.forEach(row => {
+                if (row[nKey]) {
+                    let val = String(row[nKey]).trim();
+                    const len = val.length;
+                    for (let i = 1; i <= len / 2; i++) {
+                        const s1 = val.substring(0, i);
+                        const s2 = val.substring(i);
+                        if (s1.toLowerCase() === s2.toLowerCase()) {
+                            val = s1;
+                            break;
+                        }
+                    }
+                    row[nKey] = val;
+                }
+            });
+
+            const rawRaceNames = dataset.map(r => r[rKey] || '').filter(n => n);
+            const rawRunnerNames = dataset.map(r => r[nKey] || '').filter(n => n);
+
+            const raceMapping = unifyNames(rawRaceNames);
+            const runnerMapping = unifyRunnerNames(rawRunnerNames);
+
+            dataset.forEach(row => {
+                if (row[rKey]) row[rKey] = raceMapping[row[rKey]];
+                if (row[nKey]) row[nKey] = runnerMapping[row[nKey]];
+            });
+        }
+
+        function rebuildEvents(data) {
+            events = {};
+            if (!data || data.length === 0) return;
+            
+            const sample = data[0];
+            const keys = Object.keys(sample);
+            const dKey = keys.find(k => k.toLowerCase().includes('fecha del evento') || k.toLowerCase().includes('fecha')) || keys[0];
+
+            data.forEach(row => {
+                let dateStr = row[dKey];
+                let date = parseExcelDate(dateStr);
+
+                if (!isNaN(date.getTime())) {
+                    const key = formatDateToYYYYMMDD(date);
+                    if (!events[key]) events[key] = [];
+                    events[key].push(row);
+                }
+            });
+        }
+
+        function switchClassificationSource(source) {
+            activeClassificationSource = source;
+            const activeData = getActiveClassificationData();
+            
+            // Rebuild events for the calendar tab
+            rebuildEvents(activeData);
+            
+            // Repopulate all tabs with the selected dataset
+            populateOtherTabs(activeData);
+            
+            // Redraw calendar dots
+            renderCalendar();
+        }
+
+
 
         function populateOtherTabs(data) {
             const tableHelper = (list, rows) => {
@@ -3653,6 +4010,31 @@
                         });
                         canvasHeight = Math.max(1600, testY + 100);
                     }
+                } else if (type === 'strava') {
+                    const select = document.getElementById('strava-period-select');
+                    const selectedPeriod = select ? select.value : '';
+                    if (selectedPeriod && !selectedPeriod.includes('disponibles')) {
+                        const filteredData = rawStravaData.filter(item => {
+                            const dateStr = getEventDateStr(item);
+                            if (!dateStr) return false;
+                            if (activeStravaMode === 'semanal') return dateStr === selectedPeriod;
+                            if (activeStravaMode === 'mensual') return dateStr.startsWith(selectedPeriod);
+                            if (activeStravaMode === 'anual') return dateStr.startsWith(selectedPeriod);
+                            return false;
+                        });
+
+                        const keys = Object.keys(rawStravaData[0] || {});
+                        const runnerKey = keys.find(k => k.toLowerCase().includes('nombre') && !k.toLowerCase().includes('prueba')) || 'Nombre, Apellidos';
+                        const runnerMap = {};
+                        filteredData.forEach(item => {
+                            const name = item[runnerKey];
+                            if (name) runnerMap[name] = true;
+                        });
+                        const runnersCount = Object.keys(runnerMap).length;
+                        const displayCount = Math.min(runnersCount, 15);
+                        let testY = 590 + 65 + (displayCount * 75) + 120;
+                        canvasHeight = Math.max(1600, testY);
+                    }
                 }
 
                 canvas.height = canvasHeight;
@@ -3809,13 +4191,303 @@
                         ctx.textAlign = 'center';
                         ctx.fillText('No hay carreras para mostrar.', canvas.width / 2, 400);
                     }
+                } else if (type === 'strava') {
+                    const select = document.getElementById('strava-period-select');
+                    const selectedPeriod = select ? select.value : '';
+                    if (!selectedPeriod || selectedPeriod.includes('disponibles')) {
+                        throw new Error('No hay periodo seleccionado o no hay datos de Strava disponibles.');
+                    }
+
+                    const filteredData = rawStravaData.filter(item => {
+                        const dateStr = getEventDateStr(item);
+                        if (!dateStr) return false;
+                        if (activeStravaMode === 'semanal') return dateStr === selectedPeriod;
+                        if (activeStravaMode === 'mensual') return dateStr.startsWith(selectedPeriod);
+                        if (activeStravaMode === 'anual') return dateStr.startsWith(selectedPeriod);
+                        return false;
+                    });
+
+                    const keys = Object.keys(rawStravaData[0] || {});
+                    const runnerKey = keys.find(k => k.toLowerCase().includes('nombre') && !k.toLowerCase().includes('prueba')) || 'Nombre, Apellidos';
+                    const distKey = keys.find(k => k.toLowerCase().includes('distancia') || k.toLowerCase().includes('km')) || 'Distancia de la prueba ';
+                    const genderKey = keys.find(k => k.toLowerCase().includes('sexo') || k.toLowerCase().includes('género') || k.toLowerCase().includes('genero')) || 'Sexo';
+
+                    const runsKey = keys.find(k => k.toLowerCase().includes('actividades') || k.toLowerCase().includes('carreras')) || 'Actividades';
+                    const longestKey = keys.find(k => k.toLowerCase().includes('larga') || k.toLowerCase().includes('más largo') || k.toLowerCase().includes('mas largo')) || 'Salida mas larga';
+                    const paceKey = keys.find(k => k.toLowerCase().includes('ritmo') || k.toLowerCase().includes('pace')) || 'Ritmo medio';
+                    const elevationKey = keys.find(k => k.toLowerCase().includes('desnivel') || k.toLowerCase().includes('elevation')) || 'Desnivel';
+
+                    const runnerMap = {};
+                    filteredData.forEach(item => {
+                        const name = item[runnerKey];
+                        if (!name) return;
+                        
+                        const distance = parseFloat(item[distKey]) || 0;
+                        const gender = item[genderKey] || 'H';
+                        const dateStr = getEventDateStr(item);
+                        
+                        const runs = parseInt(item[runsKey]) || 0;
+                        const longest = parseFloat(item[longestKey]) || 0;
+                        const pace = String(item[paceKey] || '').trim();
+                        const elevation = parseInt(item[elevationKey]) || 0;
+                        
+                        if (!runnerMap[name]) {
+                            runnerMap[name] = {
+                                name: name,
+                                totalKm: 0,
+                                gender: gender,
+                                weeksActive: new Set(),
+                                totalRuns: 0,
+                                maxLongest: 0,
+                                totalElevation: 0,
+                                paces: []
+                            };
+                        }
+                        runnerMap[name].totalKm += distance;
+                        runnerMap[name].weeksActive.add(dateStr);
+                        runnerMap[name].totalRuns += runs;
+                        if (longest > runnerMap[name].maxLongest) {
+                            runnerMap[name].maxLongest = longest;
+                        }
+                        runnerMap[name].totalElevation += elevation;
+                        if (pace) {
+                            runnerMap[name].paces.push(pace);
+                        }
+                    });
+
+                    const runnersList = Object.values(runnerMap);
+                    if (activeStravaSortMetric === 'distance') {
+                        runnersList.sort((a, b) => b.totalKm - a.totalKm);
+                    } else if (activeStravaSortMetric === 'elevation') {
+                        runnersList.sort((a, b) => b.totalElevation - a.totalElevation);
+                    } else if (activeStravaSortMetric === 'runs') {
+                        runnersList.sort((a, b) => b.totalRuns - a.totalRuns);
+                    } else if (activeStravaSortMetric === 'longest') {
+                        runnersList.sort((a, b) => b.maxLongest - a.maxLongest);
+                    }
+
+                    // Achievements
+                    const mountainWinner = [...runnersList].filter(r => r.totalElevation > 0).sort((a, b) => b.totalElevation - a.totalElevation)[0];
+                    const runsWinner = [...runnersList].filter(r => r.totalRuns > 0).sort((a, b) => b.totalRuns - a.totalRuns)[0];
+                    const longestWinner = [...runnersList].filter(r => r.maxLongest > 0).sort((a, b) => b.maxLongest - a.maxLongest)[0];
+
+                    let metricLabel = 'KILÓMETROS TOTALES';
+                    if (activeStravaSortMetric === 'elevation') metricLabel = 'DESNIVEL ACUMULADO';
+                    else if (activeStravaSortMetric === 'runs') metricLabel = 'ACTIVIDADES';
+                    else if (activeStravaSortMetric === 'longest') metricLabel = 'TIRADA MÁS LARGA';
+
+                    let periodLabelText = '';
+                    if (activeStravaMode === 'semanal') {
+                        periodLabelText = `Semana del ${formatStravaDate(selectedPeriod)}`;
+                    } else if (activeStravaMode === 'mensual') {
+                        const parts = selectedPeriod.split('-');
+                        periodLabelText = `${getMonthName(parts[1])} de ${parts[0]}`;
+                    } else {
+                        periodLabelText = `Año ${selectedPeriod}`;
+                    }
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '30px Outfit, Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`CLASIFICACIÓN STRAVA - ${metricLabel}`, canvas.width / 2, 170);
+
+                    ctx.strokeStyle = '#f97316';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(canvas.width / 2 - 100, 200);
+                    ctx.lineTo(canvas.width / 2 + 100, 200);
+                    ctx.stroke();
+
+                    // Draw period text below divider
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                    ctx.font = 'bold 24px Outfit, Arial';
+                    ctx.fillText(periodLabelText.toUpperCase(), canvas.width / 2, 245);
+
+                    // Summary Stats Boxes
+                    let totalClubKm = 0;
+                    runnersList.forEach(r => totalClubKm += r.totalKm);
+
+                    // Distancia Club Box
+                    ctx.fillStyle = 'rgba(249, 115, 22, 0.05)';
+                    ctx.beginPath();
+                    ctx.roundRect(250, 280, 300, 100, 15);
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(249, 115, 22, 0.2)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                    ctx.font = 'bold 15px Outfit, Arial';
+                    ctx.fillText('DISTANCIA CLUB', 400, 312);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 30px Outfit, Arial';
+                    ctx.fillText(`${totalClubKm.toFixed(1)} km`, 400, 355);
+
+                    // Corredores Activos Box
+                    ctx.fillStyle = 'rgba(249, 115, 22, 0.05)';
+                    ctx.beginPath();
+                    ctx.roundRect(650, 280, 300, 100, 15);
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(249, 115, 22, 0.2)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                    ctx.font = 'bold 15px Outfit, Arial';
+                    ctx.fillText('CORREDORES ACTIVOS', 800, 312);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 30px Outfit, Arial';
+                    ctx.fillText(`${runnersList.length}`, 800, 355);
+
+                    // Achievements Section
+                    let drawAchY = 410;
+                    let achWidth = 310;
+                    let achHeight = 140;
+                    let gap = 35;
+
+                    const achievements = [
+                        { title: 'EL MÁS MONTAÑERO', winner: mountainWinner, icon: '⛰️', detail: mountainWinner ? `+${mountainWinner.totalElevation} m desnivel` : 'Sin datos', border: '#0ea5e9' },
+                        { title: 'EL MÁS CONSTANTE', winner: runsWinner, icon: '🏃‍♂️', detail: runsWinner ? `${runsWinner.totalRuns} actividades` : 'Sin datos', border: '#10b981' },
+                        { title: 'TIRADA MÁS LARGA', winner: longestWinner, icon: '🚀', detail: longestWinner ? `${longestWinner.maxLongest.toFixed(1)} km` : 'Sin datos', border: '#ec4899' }
+                    ];
+
+                    achievements.forEach((ach, index) => {
+                        let achX = 100 + index * (achWidth + gap);
+                        
+                        ctx.fillStyle = 'rgba(255,255,255,0.03)';
+                        ctx.beginPath();
+                        ctx.roundRect(achX, drawAchY, achWidth, achHeight, 15);
+                        ctx.fill();
+                        ctx.strokeStyle = ach.border + '44';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+
+                        // Icon
+                        ctx.font = '40px Outfit, Arial';
+                        ctx.textAlign = 'left';
+                        ctx.fillText(ach.icon, achX + 20, drawAchY + 80);
+
+                        // Texts
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                        ctx.font = 'bold 12px Outfit, Arial';
+                        ctx.fillText(ach.title, achX + 80, drawAchY + 40);
+
+                        ctx.fillStyle = '#ffffff';
+                        ctx.font = 'bold 18px Outfit, Arial';
+                        const wName = ach.winner ? ach.winner.name.substring(0, 18) : 'Nadie';
+                        ctx.fillText(wName, achX + 80, drawAchY + 75);
+
+                        ctx.fillStyle = ach.border;
+                        ctx.font = 'bold 14px Outfit, Arial';
+                        ctx.fillText(ach.detail, achX + 80, drawAchY + 105);
+                    });
+
+                    // Leaderboard table
+                    let drawTableY = 590;
+
+                    // Table Header
+                    ctx.fillStyle = '#f97316';
+                    ctx.font = 'bold 22px Outfit, Arial';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('POS', 130, drawTableY + 30);
+                    ctx.fillText('CORREDOR', 250, drawTableY + 30);
+                    ctx.textAlign = 'center';
+                    ctx.fillText('SEXO', 680, drawTableY + 30);
+                    if (activeStravaMode !== 'semanal') {
+                        ctx.fillText('SEMANAS', 850, drawTableY + 30);
+                    }
+                    ctx.textAlign = 'right';
+                    let metricHeaderText = 'KM TOTALES';
+                    if (activeStravaSortMetric === 'elevation') metricHeaderText = 'DESNIVEL';
+                    else if (activeStravaSortMetric === 'runs') metricHeaderText = 'ACTIVIDADES';
+                    else if (activeStravaSortMetric === 'longest') metricHeaderText = 'SALIDA MÁX';
+                    ctx.fillText(metricHeaderText, 1070, drawTableY + 30);
+
+                    // Underline
+                    ctx.strokeStyle = '#f97316';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(100, drawTableY + 45);
+                    ctx.lineTo(1100, drawTableY + 45);
+                    ctx.stroke();
+
+                    // Rows
+                    let rowY = drawTableY + 95;
+                    const displayList = runnersList.slice(0, 15);
+                    displayList.forEach((r, idx) => {
+                        if (idx % 2 === 0) {
+                            ctx.fillStyle = 'rgba(255,255,255,0.02)';
+                            ctx.beginPath();
+                            ctx.roundRect(100, rowY - 45, 1000, 68, 8);
+                            ctx.fill();
+                        }
+
+                        // Medal or Rank
+                        let rankText = String(idx + 1);
+                        if (idx === 0) rankText = '🥇';
+                        else if (idx === 1) rankText = '🥈';
+                        else if (idx === 2) rankText = '🥉';
+
+                        ctx.fillStyle = '#ffffff';
+                        ctx.font = 'bold 22px Outfit, Arial';
+                        ctx.textAlign = 'left';
+                        ctx.fillText(rankText, 140, rowY - 5);
+
+                        // Runner Name
+                        ctx.font = 'bold 22px Outfit, Arial';
+                        ctx.fillText(r.name, 250, rowY - 12);
+
+                        // Stats details
+                        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                        ctx.font = '14px Outfit, Arial';
+                        let subInfo = `⛰️ +${r.totalElevation}m | 🏃‍♂️ ${r.totalRuns} act. | 🚀 Max: ${r.maxLongest.toFixed(1)}k`;
+                        ctx.fillText(subInfo, 250, rowY + 10);
+
+                        // Gender Icon
+                        ctx.fillStyle = '#ffffff';
+                        ctx.font = '22px Outfit, Arial';
+                        ctx.textAlign = 'center';
+                        let genderIcon = r.gender === 'M' ? '👩' : '👨';
+                        ctx.fillText(genderIcon, 680, rowY - 5);
+
+                        // Weeks Active (if not weekly)
+                        if (activeStravaMode !== 'semanal') {
+                            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                            ctx.font = '20px Outfit, Arial';
+                            ctx.fillText(`${r.weeksActive.size} sem`, 850, rowY - 5);
+                        }
+
+                        // Metric value
+                        let metricValue = `${r.totalKm.toFixed(1)} km`;
+                        if (activeStravaSortMetric === 'elevation') {
+                            metricValue = `+${r.totalElevation} m`;
+                        } else if (activeStravaSortMetric === 'runs') {
+                            metricValue = `${r.totalRuns} act`;
+                        } else if (activeStravaSortMetric === 'longest') {
+                            metricValue = `${r.maxLongest.toFixed(1)} km`;
+                        }
+
+                        ctx.fillStyle = '#f97316';
+                        ctx.font = 'bold 24px Outfit, Arial';
+                        ctx.textAlign = 'right';
+                        ctx.fillText(metricValue, 1070, rowY - 5);
+
+                        rowY += 75;
+                    });
+
+                    if (displayList.length === 0) {
+                        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                        ctx.font = 'italic 24px Outfit, Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('No hay kilómetros registrados en este periodo.', canvas.width / 2, drawTableY + 150);
+                    }
                 } else {
                     // EXISTING PODIUMS/RANKING LOGIC
                     const monthVal = document.getElementById('rank-month-select').value;
                     const genderVal = document.getElementById('rank-gender-select').value;
                     const labels = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
-                    let filteredData = [...rawExcelData];
+                    let filteredData = [...getActiveClassificationData()];
 
                     if (monthVal !== 'all') {
                         const targetMonth = parseInt(monthVal);
@@ -4014,6 +4686,1210 @@
             currentDate.setMonth(currentDate.getMonth() + 1);
             renderCalendar();
         }
+
+        // ==========================================
+        // FUNCIONES DE CLASIFICACIÓN DE STRAVA CLUB
+        // ==========================================
+        function getEventDateStr(item) {
+            const keys = Object.keys(rawStravaData[0] || {});
+            const dateKey = keys.find(k => k.toLowerCase().includes('fecha') && !k.toLowerCase().includes('temporal')) || 'Fecha del Evento';
+            const val = item[dateKey];
+            return formatDateToYYYYMMDD(val);
+        }
+
+        function getMonthName(monthStr) {
+            const months = {
+                '01': 'Enero', '02': 'Febrero', '03': 'Marzo', '04': 'Abril',
+                '05': 'Mayo', '06': 'Junio', '07': 'Julio', '08': 'Agosto',
+                '09': 'Septiembre', '10': 'Octubre', '11': 'Noviembre', '12': 'Diciembre'
+            };
+            return months[monthStr] || monthStr;
+        }
+
+        function formatStravaDate(dateStr) {
+            const parts = dateStr.split('-');
+            if (parts.length < 3) return dateStr;
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+
+        function getStravaPeriods() {
+            if (!rawStravaData || rawStravaData.length === 0) return [];
+            
+            const periods = new Set();
+            rawStravaData.forEach(item => {
+                const dateStr = getEventDateStr(item);
+                if (!dateStr) return;
+                
+                const parts = dateStr.split('-');
+                if (parts.length < 3) return;
+                
+                const year = parts[0];
+                const month = parts[1];
+                
+                if (activeStravaMode === 'semanal') {
+                    periods.add(dateStr);
+                } else if (activeStravaMode === 'mensual') {
+                    periods.add(`${year}-${month}`);
+                } else if (activeStravaMode === 'anual') {
+                    periods.add(year);
+                }
+            });
+            
+            return Array.from(periods).sort().reverse();
+        }
+
+        function changeStravaMode(mode) {
+            activeStravaMode = mode;
+            
+            ['semanal', 'mensual', 'anual'].forEach(m => {
+                const btn = document.getElementById(`strava-btn-${m}`);
+                if (btn) {
+                    if (m === mode) {
+                        btn.classList.add('active');
+                        btn.style.background = 'rgba(249, 115, 22, 0.15)';
+                        btn.style.color = '#f97316';
+                        btn.style.borderColor = '#f97316';
+                    } else {
+                        btn.classList.remove('active');
+                        btn.style.background = '';
+                        btn.style.color = '';
+                        btn.style.borderColor = '';
+                    }
+                }
+            });
+            
+            populateStravaPeriods();
+        }
+
+        function changeStravaSortMetric(metric) {
+            activeStravaSortMetric = metric;
+            updateStravaLeaderboard();
+        }
+
+        function populateStravaPeriods() {
+            const select = document.getElementById('strava-period-select');
+            if (!select) return;
+            
+            const periods = getStravaPeriods();
+            if (periods.length === 0) {
+                select.innerHTML = '<option>Sin periodos disponibles</option>';
+                updateStravaLeaderboard();
+                return;
+            }
+            
+            select.innerHTML = periods.map(p => {
+                let label = p;
+                if (activeStravaMode === 'semanal') {
+                    label = `Semana del ${formatStravaDate(p)}`;
+                } else if (activeStravaMode === 'mensual') {
+                    const parts = p.split('-');
+                    label = `${getMonthName(parts[1])} ${parts[0]}`;
+                } else if (activeStravaMode === 'anual') {
+                    label = `Año ${p}`;
+                }
+                return `<option value="${p}">${label}</option>`;
+            }).join('');
+            
+            updateStravaLeaderboard();
+        }
+
+        function updateStravaLeaderboard() {
+            const select = document.getElementById('strava-period-select');
+            const rankingList = document.getElementById('strava-ranking-list');
+            
+            if (!select || !rankingList) return;
+            
+            const selectedPeriod = select.value;
+            if (!selectedPeriod || selectedPeriod.includes('disponibles')) {
+                rankingList.innerHTML = '<div class="no-data">No hay datos en el periodo seleccionado.</div>';
+                document.getElementById('strava-total-km').textContent = '0.0 km';
+                document.getElementById('strava-total-runners').textContent = '0';
+                document.getElementById('strava-leader-name').textContent = 'Nadie';
+                return;
+            }
+            
+            const filteredData = rawStravaData.filter(item => {
+                const dateStr = getEventDateStr(item);
+                if (!dateStr) return false;
+                
+                if (activeStravaMode === 'semanal') {
+                    return dateStr === selectedPeriod;
+                } else if (activeStravaMode === 'mensual') {
+                    return dateStr.startsWith(selectedPeriod);
+                } else if (activeStravaMode === 'anual') {
+                    return dateStr.startsWith(selectedPeriod);
+                }
+                return false;
+            });
+            
+            const keys = Object.keys(rawStravaData[0] || {});
+            const runnerKey = keys.find(k => k.toLowerCase().includes('nombre') && !k.toLowerCase().includes('prueba')) || 'Nombre, Apellidos';
+            const distKey = keys.find(k => k.toLowerCase().includes('distancia') || k.toLowerCase().includes('km')) || 'Distancia de la prueba ';
+            const genderKey = keys.find(k => k.toLowerCase().includes('sexo') || k.toLowerCase().includes('género') || k.toLowerCase().includes('genero')) || 'Sexo';
+
+            const runsKey = keys.find(k => k.toLowerCase().includes('actividades') || k.toLowerCase().includes('carreras')) || 'Actividades';
+            const longestKey = keys.find(k => k.toLowerCase().includes('larga') || k.toLowerCase().includes('más largo') || k.toLowerCase().includes('mas largo')) || 'Salida mas larga';
+            const paceKey = keys.find(k => k.toLowerCase().includes('ritmo') || k.toLowerCase().includes('pace')) || 'Ritmo medio';
+            const elevationKey = keys.find(k => k.toLowerCase().includes('desnivel') || k.toLowerCase().includes('elevation')) || 'Desnivel';
+
+            const runnerMap = {};
+            filteredData.forEach(item => {
+                const name = item[runnerKey];
+                if (!name) return;
+                
+                const distance = parseFloat(item[distKey]) || 0;
+                const gender = item[genderKey] || 'H';
+                const dateStr = getEventDateStr(item);
+                
+                const runs = parseInt(item[runsKey]) || 0;
+                const longest = parseFloat(item[longestKey]) || 0;
+                const pace = String(item[paceKey] || '').trim();
+                const elevation = parseInt(item[elevationKey]) || 0;
+                
+                if (!runnerMap[name]) {
+                    runnerMap[name] = {
+                        name: name,
+                        totalKm: 0,
+                        gender: gender,
+                        weeksActive: new Set(),
+                        totalRuns: 0,
+                        maxLongest: 0,
+                        totalElevation: 0,
+                        paces: []
+                    };
+                }
+                runnerMap[name].totalKm += distance;
+                runnerMap[name].weeksActive.add(dateStr);
+                runnerMap[name].totalRuns += runs;
+                if (longest > runnerMap[name].maxLongest) {
+                    runnerMap[name].maxLongest = longest;
+                }
+                runnerMap[name].totalElevation += elevation;
+                if (pace) {
+                    runnerMap[name].paces.push(pace);
+                }
+            });
+            
+            const runnersList = Object.values(runnerMap);
+            if (activeStravaSortMetric === 'distance') {
+                runnersList.sort((a, b) => b.totalKm - a.totalKm);
+            } else if (activeStravaSortMetric === 'elevation') {
+                runnersList.sort((a, b) => b.totalElevation - a.totalElevation);
+            } else if (activeStravaSortMetric === 'runs') {
+                runnersList.sort((a, b) => b.totalRuns - a.totalRuns);
+            } else if (activeStravaSortMetric === 'longest') {
+                runnersList.sort((a, b) => b.maxLongest - a.maxLongest);
+            }
+            
+            let totalKm = 0;
+            runnersList.forEach(r => totalKm += r.totalKm);
+            
+            document.getElementById('strava-total-km').textContent = `${totalKm.toFixed(1)} km`;
+            document.getElementById('strava-total-runners').textContent = runnersList.length;
+            
+            if (runnersList.length > 0) {
+                const leader = runnersList[0];
+                document.getElementById('strava-leader-name').textContent = `${leader.name} (${leader.totalKm.toFixed(1)} km)`;
+            } else {
+                document.getElementById('strava-leader-name').textContent = 'Nadie';
+            }
+            
+            // Calculate and display Special Achievements
+            const mountainWinner = [...runnersList].filter(r => r.totalElevation > 0).sort((a, b) => b.totalElevation - a.totalElevation)[0];
+            const runsWinner = [...runnersList].filter(r => r.totalRuns > 0).sort((a, b) => b.totalRuns - a.totalRuns)[0];
+            const longestWinner = [...runnersList].filter(r => r.maxLongest > 0).sort((a, b) => b.maxLongest - a.maxLongest)[0];
+            
+            const achievementsContainer = document.getElementById('strava-achievements-container');
+            if (achievementsContainer) {
+                let html = '';
+                
+                if (mountainWinner) {
+                    html += `
+                        <div class="card" style="border-color: #0ea5e9; background: rgba(14, 165, 233, 0.03); display: flex; align-items: center; gap: 1rem; padding: 1.2rem;">
+                            <div style="font-size: 2.2rem;">⛰️</div>
+                            <div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">El más Montañero</div>
+                                <div style="font-size: 1.1rem; font-weight: 800; color: var(--text); margin-top: 0.1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px;" title="${mountainWinner.name}">${mountainWinner.name}</div>
+                                <div style="font-size: 0.9rem; font-weight: 700; color: #0ea5e9; margin-top: 0.1rem;">+${mountainWinner.totalElevation} m desnivel</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (runsWinner) {
+                    html += `
+                        <div class="card" style="border-color: #10b981; background: rgba(16, 185, 129, 0.03); display: flex; align-items: center; gap: 1rem; padding: 1.2rem;">
+                            <div style="font-size: 2.2rem;">🏃‍♂️</div>
+                            <div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">El más Constante</div>
+                                <div style="font-size: 1.1rem; font-weight: 800; color: var(--text); margin-top: 0.1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px;" title="${runsWinner.name}">${runsWinner.name}</div>
+                                <div style="font-size: 0.9rem; font-weight: 700; color: #10b981; margin-top: 0.1rem;">${runsWinner.totalRuns} actividades</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (longestWinner) {
+                    html += `
+                        <div class="card" style="border-color: #ec4899; background: rgba(236, 72, 153, 0.03); display: flex; align-items: center; gap: 1rem; padding: 1.2rem;">
+                            <div style="font-size: 2.2rem;">🚀</div>
+                            <div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Tirada más Larga</div>
+                                <div style="font-size: 1.1rem; font-weight: 800; color: var(--text); margin-top: 0.1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px;" title="${longestWinner.name}">${longestWinner.name}</div>
+                                <div style="font-size: 0.9rem; font-weight: 700; color: #ec4899; margin-top: 0.1rem;">${longestWinner.maxLongest.toFixed(1)} km en una salida</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (html) {
+                    achievementsContainer.innerHTML = html;
+                    achievementsContainer.style.display = 'grid';
+                } else {
+                    achievementsContainer.style.display = 'none';
+                }
+            }
+            
+            if (runnersList.length === 0) {
+                rankingList.innerHTML = '<div class="no-data">No hay kilómetros registrados en este periodo.</div>';
+                return;
+            }
+            
+            const rowsHtml = runnersList.map((r, idx) => {
+                const rankIcon = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1;
+                const genderIcon = r.gender === 'M' ? '👩' : '👨';
+                const weeksCountStr = activeStravaMode !== 'semanal' 
+                    ? `<td style="padding: 0.6rem 0.8rem; text-align: right; color: var(--text-muted); font-size: 0.9rem;">${r.weeksActive.size} sem</td>`
+                    : '';
+                    
+                const extraStats = (r.totalElevation > 0 || r.totalRuns > 0)
+                    ? `<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; font-weight: normal; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <span>⛰️ +${r.totalElevation}m</span>
+                        <span>🏃‍♂️ ${r.totalRuns} act.</span>
+                        <span>🚀 Max: ${r.maxLongest.toFixed(1)}k</span>
+                       </div>`
+                    : '';
+                    
+                let metricValue = `${r.totalKm.toFixed(1)} <span style="font-size: 0.8rem; font-weight: normal;">km</span>`;
+                if (activeStravaSortMetric === 'elevation') {
+                    metricValue = `+${r.totalElevation} <span style="font-size: 0.8rem; font-weight: normal;">m</span>`;
+                } else if (activeStravaSortMetric === 'runs') {
+                    metricValue = `${r.totalRuns} <span style="font-size: 0.8rem; font-weight: normal;">act</span>`;
+                } else if (activeStravaSortMetric === 'longest') {
+                    metricValue = `${r.maxLongest.toFixed(1)} <span style="font-size: 0.8rem; font-weight: normal;">km</span>`;
+                }
+
+                return `
+                    <tr style="border-bottom: 1px solid var(--glass-border); background: ${idx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent'};">
+                        <td style="padding: 0.6rem 0.8rem; font-weight: 600;">${rankIcon}</td>
+                        <td style="padding: 0.6rem 0.8rem; font-weight: 500;">
+                            <span class="runner-name" style="font-weight: 700;">
+                                ${r.name} <span style="color: #f97316; font-size: 0.85rem; margin-left: 4px; vertical-align: middle;" title="Sincronizado con Strava">⚡</span>
+                            </span>
+                            ${extraStats}
+                        </td>
+                        <td style="padding: 0.6rem 0.8rem; text-align: center;">${genderIcon}</td>
+                        ${weeksCountStr}
+                        <td style="padding: 0.6rem 0.8rem; text-align: right; color: var(--accent); font-weight: 700; font-size: 1.1rem;">
+                            ${metricValue}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            let metricHeader = 'Km Totales';
+            if (activeStravaSortMetric === 'elevation') metricHeader = 'Desnivel';
+            else if (activeStravaSortMetric === 'runs') metricHeader = 'Actividades';
+            else if (activeStravaSortMetric === 'longest') metricHeader = 'Salida Máxima';
+
+            const tableHeaders = `
+                <th style="padding: 0.6rem 0.8rem; font-size: 0.9rem; text-align: left; width: 60px;">Pos</th>
+                <th style="padding: 0.6rem 0.8rem; font-size: 0.9rem; text-align: left;">Corredor</th>
+                <th style="padding: 0.6rem 0.8rem; font-size: 0.9rem; text-align: center; width: 80px;">Sexo</th>
+                ${activeStravaMode !== 'semanal' ? `<th style="padding: 0.6rem 0.8rem; font-size: 0.9rem; text-align: right; width: 120px;">Semanas Activo</th>` : ''}
+                <th style="padding: 0.6rem 0.8rem; font-size: 0.9rem; text-align: right; width: 120px;">${metricHeader}</th>
+            `;
+            
+            rankingList.innerHTML = `
+                <table style="width: 100%; border-collapse: collapse; margin-top: 0.5rem;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #f97316; color: var(--text-muted); text-align: left;">
+                            ${tableHeaders}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+            `;
+            
+            let periodText = '';
+            if (activeStravaMode === 'semanal') {
+                periodText = `Semana del ${formatStravaDate(selectedPeriod)}`;
+            } else if (activeStravaMode === 'mensual') {
+                const parts = selectedPeriod.split('-');
+                periodText = `${getMonthName(parts[1])} de ${parts[0]}`;
+            } else {
+                periodText = `Año ${selectedPeriod}`;
+            }
+            document.getElementById('strava-period-label').textContent = `(${periodText})`;
+        }
+        // --- EVOLUTION SCREEN JS LOGIC ---
+        let evolutionMode = 'manual'; // 'manual' o 'strava'
+        let evolutionChart = null;
+        let runnerColors = {};
+
+        const premiumColors = [
+            { h: 198, s: 90, l: 60 }, // Sky Blue
+            { h: 25, s: 95, l: 55 },  // Strava Orange
+            { h: 142, s: 70, l: 55 }, // Neon Green
+            { h: 350, s: 90, l: 60 }, // Rose/Red
+            { h: 270, s: 80, l: 65 }, // Purple
+            { h: 45, s: 90, l: 50 },  // Yellow/Gold
+            { h: 188, s: 90, l: 50 }, // Cyan
+            { h: 325, s: 85, l: 60 }, // Pink
+            { h: 170, s: 80, l: 45 }, // Teal
+            { h: 38, s: 95, l: 50 },  // Amber
+            { h: 239, s: 80, l: 65 }, // Indigo
+            { h: 84, s: 80, l: 50 },  // Lime
+            { h: 345, s: 90, l: 70 }, // Soft Rose
+            { h: 280, s: 70, l: 50 }, // Violet
+            { h: 150, s: 80, l: 60 }  // Mint
+        ];
+
+        function showEvolutionScreen(mode = 'manual') {
+            evolutionMode = mode;
+            showScreen('evolution-screen');
+
+            const screen = document.getElementById('evolution-screen');
+            const h1 = screen.querySelector('h1');
+            const p = screen.querySelector('p');
+
+            if (mode === 'manual') {
+                h1.textContent = '📈 EVOLUCIÓN DE LA CLASIFICACIÓN';
+                p.textContent = 'Histórico del puesto de los corredores en la Liga Interna';
+                h1.style.textShadow = '0 0 20px rgba(16, 185, 129, 0.2)';
+                screen.style.setProperty('--primary', '#10b981');
+                
+                document.getElementById('evo-filter1-label').textContent = 'CATEGORÍA';
+                document.getElementById('evo-filter1-select').innerHTML = `
+                    <option value="general">🏆 General</option>
+                    <option value="asfalto">🛣️ Asfalto</option>
+                    <option value="trail">⛰️ Trail</option>
+                `;
+                
+                document.getElementById('evo-filter2-select').innerHTML = `
+                    <option value="all">👥 Todos los sexos</option>
+                    <option value="H">♂️ Masculino</option>
+                    <option value="M">♀️ Femenino</option>
+                `;
+
+                document.getElementById('evo-filter3-label').textContent = 'LÍNEA DE TIEMPO';
+                document.getElementById('evo-filter3-select').innerHTML = `
+                    <option value="monthly">📅 Mensual (Acumulado)</option>
+                    <option value="race">🏁 Carrera a Carrera</option>
+                `;
+            } else {
+                h1.textContent = '📈 EVOLUCIÓN CLASIFICACIÓN STRAVA';
+                p.textContent = 'Histórico de los líderes del Club en kilómetros, desnivel, actividades o tiradas';
+                h1.style.textShadow = '0 0 20px rgba(249, 115, 22, 0.2)';
+                screen.style.setProperty('--primary', '#f97316');
+
+                document.getElementById('evo-filter1-label').textContent = 'MÉTRICA';
+                document.getElementById('evo-filter1-select').innerHTML = `
+                    <option value="distance">⚡ Kilómetros Totales</option>
+                    <option value="elevation">⛰️ Desnivel Acumulado</option>
+                    <option value="runs">🏃‍♂️ Actividades</option>
+                    <option value="longest">🚀 Tirada más larga</option>
+                `;
+                
+                document.getElementById('evo-filter2-select').innerHTML = `
+                    <option value="all">👥 Todos los sexos</option>
+                    <option value="H">♂️ Masculino</option>
+                    <option value="M">♀️ Femenino</option>
+                `;
+
+                document.getElementById('evo-filter3-label').textContent = 'LÍNEA DE TIEMPO';
+                document.getElementById('evo-filter3-select').innerHTML = `
+                    <option value="weekly">📅 Semanal (Acumulado)</option>
+                    <option value="monthly">🗓️ Mensual (Acumulado)</option>
+                `;
+            }
+
+            initEvolutionRunnersList();
+            updateEvolutionChart();
+        }
+
+        function showManualEvolutionScreen() {
+            showEvolutionScreen('manual');
+        }
+
+        function showStravaEvolutionScreen() {
+            showEvolutionScreen('strava');
+        }
+
+        function onEvoFiltersChange() {
+            initEvolutionRunnersList();
+            updateEvolutionChart();
+        }
+
+        function onFilter1Change() {
+            updateEvolutionChart();
+        }
+
+        function initEvolutionRunnersList() {
+            const isStrava = evolutionMode === 'strava';
+            const dataToUse = isStrava ? rawStravaData : getActiveClassificationData();
+            if (dataToUse.length === 0) {
+                document.getElementById('evo-runners-list').innerHTML = '<div class="no-data">No hay datos disponibles.</div>';
+                return;
+            }
+
+            const categoryVal = document.getElementById('evo-filter1-select').value;
+            const genderVal = document.getElementById('evo-filter2-select').value;
+            const timeVal = document.getElementById('evo-filter3-select').value;
+
+            let runnerKeyLocal = detectedRunnerKey;
+            let genderKeyLocal = detectedGenderKey;
+            let dateKeyLocal = detectedDateKey;
+
+            if (isStrava) {
+                const keys = Object.keys(dataToUse[0] || {});
+                runnerKeyLocal = keys.find(k => k.toLowerCase().includes('nombre') && !k.toLowerCase().includes('prueba')) || 'Nombre, Apellidos';
+                genderKeyLocal = keys.find(k => k.toLowerCase().includes('sexo') || k.toLowerCase().includes('género') || k.toLowerCase().includes('genero')) || 'Sexo';
+                dateKeyLocal = keys.find(k => k.toLowerCase().includes('fecha') && !k.toLowerCase().includes('temporal')) || 'Fecha del Evento';
+            }
+
+            let filtered = dataToUse;
+            if (genderVal !== 'all' && genderKeyLocal) {
+                filtered = filtered.filter(row => {
+                    const val = String(row[genderKeyLocal] || '').toUpperCase();
+                    if (genderVal === 'H') {
+                        return val.startsWith('H') || val.startsWith('MASC') || val.startsWith('V');
+                    } else {
+                        return val.startsWith('M') && !val.startsWith('MASC') || val.startsWith('FEM') || val.startsWith('F');
+                    }
+                });
+            }
+
+            const names = [...new Set(filtered.map(r => r[runnerKeyLocal]).filter(n => n))].sort();
+
+            names.forEach((name, idx) => {
+                if (!runnerColors[name]) {
+                    const c = premiumColors[idx % premiumColors.length];
+                    runnerColors[name] = {
+                        normal: `hsla(${c.h}, ${c.s}%, ${c.l}%, 1)`,
+                        faded: `hsla(${c.h}, 20%, 30%, 0.15)`
+                    };
+                }
+            });
+
+            let top10Names = [];
+            if (names.length > 0) {
+                if (isStrava) {
+                    const periods = [...new Set(filtered.map(item => {
+                        const dateVal = item[dateKeyLocal];
+                        if (dateVal instanceof Date) return formatDateToYYYYMMDD(dateVal);
+                        return String(dateVal).split('T')[0].trim();
+                    }).filter(d => d))].sort();
+
+                    if (periods.length > 0) {
+                        const latestPeriod = periods[periods.length - 1];
+                        let periodRows = [];
+                        if (timeVal === 'weekly') {
+                            periodRows = filtered.filter(r => {
+                                const d = r[dateKeyLocal];
+                                const dStr = d instanceof Date ? formatDateToYYYYMMDD(d) : String(d).split('T')[0].trim();
+                                return dStr && dStr <= latestPeriod;
+                            });
+                        } else {
+                            const latestMonth = latestPeriod.substring(0, 7);
+                            periodRows = filtered.filter(r => {
+                                const d = r[dateKeyLocal];
+                                const dStr = d instanceof Date ? formatDateToYYYYMMDD(d) : String(d).split('T')[0].trim();
+                                return dStr && dStr.substring(0, 7) <= latestMonth;
+                            });
+                        }
+                        const standings = calcStravaStandings(periodRows, categoryVal, runnerKeyLocal, dataToUse);
+                        top10Names = standings.slice(0, 10).map(s => s.name);
+                    }
+                } else {
+                    let catFiltered = filtered;
+                    if (categoryVal === 'asfalto') {
+                        catFiltered = catFiltered.filter(row => {
+                            const type = (row['Tipo de Carrera'] || row['Tipo'] || '').toLowerCase();
+                            return type.includes('asfalto');
+                        });
+                    } else if (categoryVal === 'trail') {
+                        catFiltered = catFiltered.filter(row => {
+                            const type = (row['Tipo de Carrera'] || row['Tipo'] || '').toLowerCase();
+                            return type.includes('montaña') || type.includes('trail') || type.includes('obstáculos');
+                        });
+                    }
+                    const standings = calcRank(catFiltered, bonusMode);
+                    top10Names = standings.slice(0, 10).map(s => s.name);
+                }
+            }
+
+            const container = document.getElementById('evo-runners-list');
+            container.innerHTML = names.map(name => {
+                const color = runnerColors[name].normal;
+                const isChecked = top10Names.includes(name);
+                
+                return `
+                    <label class="evo-runner-item" data-name="${name}" onmouseenter="highlightRunnerLine('${name}')" onmouseleave="highlightRunnerLine(null)">
+                        <input type="checkbox" class="evo-runner-checkbox" data-name="${name}" ${isChecked ? 'checked' : ''} onchange="updateSelectedCount(); updateEvolutionChart();">
+                        <span style="width: 12px; height: 12px; border-radius: 50%; background: ${color}; display: inline-block; border: 1px solid rgba(255,255,255,0.2);"></span>
+                        <span style="flex: 1; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-weight: 500;">${name}</span>
+                    </label>
+                `;
+            }).join('');
+
+            updateSelectedCount();
+        }
+
+        function calcStravaStandings(rows, metric, runnerKeyLocal, rawDataSample) {
+            if (rows.length === 0) return [];
+            
+            const keys = Object.keys(rawDataSample[0] || {});
+            const distKeyLocal = keys.find(k => k.toLowerCase().includes('distancia') || k.toLowerCase().includes('km')) || 'Distancia de la prueba ';
+            const runsKeyLocal = keys.find(k => k.toLowerCase().includes('actividades') || k.toLowerCase().includes('carreras')) || 'Actividades';
+            const longestKeyLocal = keys.find(k => k.toLowerCase().includes('larga') || k.toLowerCase().includes('más largo') || k.toLowerCase().includes('mas largo')) || 'Salida mas larga';
+            const elevationKeyLocal = keys.find(k => k.toLowerCase().includes('desnivel') || k.toLowerCase().includes('elevation')) || 'Desnivel';
+
+            const runnerMap = {};
+            rows.forEach(item => {
+                const name = item[runnerKeyLocal];
+                if (!name) return;
+                
+                const distance = parseFloat(item[distKeyLocal]) || 0;
+                const runs = parseInt(item[runsKeyLocal]) || 0;
+                const longest = parseFloat(item[longestKeyLocal]) || 0;
+                const elevation = parseInt(item[elevationKeyLocal]) || 0;
+                
+                if (!runnerMap[name]) {
+                    runnerMap[name] = {
+                        name: name,
+                        totalKm: 0,
+                        totalRuns: 0,
+                        maxLongest: 0,
+                        totalElevation: 0
+                    };
+                }
+                runnerMap[name].totalKm += distance;
+                runnerMap[name].totalRuns += runs;
+                if (longest > runnerMap[name].maxLongest) {
+                    runnerMap[name].maxLongest = longest;
+                }
+                runnerMap[name].totalElevation += elevation;
+            });
+            
+            const list = Object.values(runnerMap);
+            if (metric === 'distance') {
+                list.sort((a, b) => b.totalKm - a.totalKm);
+            } else if (metric === 'elevation') {
+                list.sort((a, b) => b.totalElevation - a.totalElevation);
+            } else if (metric === 'runs') {
+                list.sort((a, b) => b.totalRuns - a.totalRuns);
+            } else if (metric === 'longest') {
+                list.sort((a, b) => b.maxLongest - a.maxLongest);
+            }
+            return list;
+        }
+
+        function highlightRunnerLine(hoveredName) {
+            if (!evolutionChart) return;
+            evolutionChart.data.datasets.forEach(dataset => {
+                const name = dataset.label;
+                if (hoveredName) {
+                    if (name === hoveredName) {
+                        dataset.borderColor = runnerColors[name].normal;
+                        dataset.borderWidth = 5;
+                        dataset.pointRadius = 7;
+                    } else {
+                        dataset.borderColor = runnerColors[name].faded;
+                        dataset.borderWidth = 1.5;
+                        dataset.pointRadius = 2;
+                    }
+                } else {
+                    dataset.borderColor = runnerColors[name].normal;
+                    dataset.borderWidth = 3;
+                    dataset.pointRadius = 4;
+                }
+            });
+            evolutionChart.update('none');
+        }
+
+        function updateSelectedCount() {
+            const checked = document.querySelectorAll('.evo-runner-checkbox:checked').length;
+            document.getElementById('evo-selected-count').textContent = `${checked} seleccionados`;
+        }
+
+        function selectAllRunners(checked) {
+            const checkboxes = document.querySelectorAll('.evo-runner-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = checked;
+            });
+            updateSelectedCount();
+            updateEvolutionChart();
+        }
+
+        function selectTopRunners(limit = 10) {
+            const isStrava = evolutionMode === 'strava';
+            const dataToUse = isStrava ? rawStravaData : getActiveClassificationData();
+            if (dataToUse.length === 0) return;
+
+            const categoryVal = document.getElementById('evo-filter1-select').value;
+            const genderVal = document.getElementById('evo-filter2-select').value;
+            const timeVal = document.getElementById('evo-filter3-select').value;
+
+            let runnerKeyLocal = detectedRunnerKey;
+            let genderKeyLocal = detectedGenderKey;
+            let dateKeyLocal = detectedDateKey;
+
+            if (isStrava) {
+                const keys = Object.keys(dataToUse[0] || {});
+                runnerKeyLocal = keys.find(k => k.toLowerCase().includes('nombre') && !k.toLowerCase().includes('prueba')) || 'Nombre, Apellidos';
+                genderKeyLocal = keys.find(k => k.toLowerCase().includes('sexo') || k.toLowerCase().includes('género') || k.toLowerCase().includes('genero')) || 'Sexo';
+                dateKeyLocal = keys.find(k => k.toLowerCase().includes('fecha') && !k.toLowerCase().includes('temporal')) || 'Fecha del Evento';
+            }
+
+            let filtered = dataToUse;
+            if (genderVal !== 'all' && genderKeyLocal) {
+                filtered = filtered.filter(row => {
+                    const val = String(row[genderKeyLocal] || '').toUpperCase();
+                    if (genderVal === 'H') {
+                        return val.startsWith('H') || val.startsWith('MASC') || val.startsWith('V');
+                    } else {
+                        return val.startsWith('M') && !val.startsWith('MASC') || val.startsWith('FEM') || val.startsWith('F');
+                    }
+                });
+            }
+
+            let topNames = [];
+            if (filtered.length > 0) {
+                if (isStrava) {
+                    const periods = [...new Set(filtered.map(item => {
+                        const dateVal = item[dateKeyLocal];
+                        if (dateVal instanceof Date) return formatDateToYYYYMMDD(dateVal);
+                        return String(dateVal).split('T')[0].trim();
+                    }).filter(d => d))].sort();
+
+                    if (periods.length > 0) {
+                        const latestPeriod = periods[periods.length - 1];
+                        let periodRows = [];
+                        if (timeVal === 'weekly') {
+                            periodRows = filtered.filter(r => {
+                                const d = r[dateKeyLocal];
+                                const dStr = d instanceof Date ? formatDateToYYYYMMDD(d) : String(d).split('T')[0].trim();
+                                return dStr === latestPeriod;
+                            });
+                        } else {
+                            const latestMonth = latestPeriod.substring(0, 7);
+                            periodRows = filtered.filter(r => {
+                                const d = r[dateKeyLocal];
+                                const dStr = d instanceof Date ? formatDateToYYYYMMDD(d) : String(d).split('T')[0].trim();
+                                return dStr.startsWith(latestMonth);
+                            });
+                        }
+                        const standings = calcStravaStandings(periodRows, categoryVal, runnerKeyLocal, dataToUse);
+                        topNames = standings.slice(0, limit).map(s => s.name);
+                    }
+                } else {
+                    const dates = filtered.map(r => parseExcelDate(r[dateKeyLocal])).filter(d => !isNaN(d.getTime())).sort((a,b) => a-b);
+                    if (dates.length > 0) {
+                        let periodRows = [];
+                        const latestDate = dates[dates.length - 1];
+                        if (timeVal === 'monthly') {
+                            periodRows = filtered.filter(r => {
+                                const d = parseExcelDate(r[dateKeyLocal]);
+                                if (isNaN(d.getTime())) return false;
+                                return d.getFullYear() === latestDate.getFullYear() && d.getMonth() === latestDate.getMonth();
+                            });
+                        } else {
+                            periodRows = filtered.filter(r => {
+                                const d = parseExcelDate(r[dateKeyLocal]);
+                                if (isNaN(d.getTime())) return false;
+                                return d.getTime() === latestDate.getTime();
+                            });
+                        }
+                        const standings = calcRank(periodRows, bonusMode);
+                        topNames = standings.slice(0, limit).map(s => s.name);
+                    }
+                }
+            }
+
+            const checkboxes = document.querySelectorAll('.evo-runner-checkbox');
+            checkboxes.forEach(cb => {
+                const name = cb.getAttribute('data-name');
+                cb.checked = topNames.includes(name);
+            });
+
+            updateSelectedCount();
+            updateEvolutionChart();
+        }
+
+        function filterEvolutionRunnersList() {
+            const query = document.getElementById('evo-search-input').value.toLowerCase();
+            const items = document.querySelectorAll('.evo-runner-item');
+            items.forEach(item => {
+                const name = item.getAttribute('data-name').toLowerCase();
+                if (name.includes(query)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function updateEvolutionChart() {
+            const isStrava = evolutionMode === 'strava';
+            const dataToUse = isStrava ? rawStravaData : getActiveClassificationData();
+            if (dataToUse.length === 0) return;
+
+            const categoryVal = document.getElementById('evo-filter1-select').value;
+            const genderVal = document.getElementById('evo-filter2-select').value;
+            const timeVal = document.getElementById('evo-filter3-select').value;
+
+            const checkboxes = document.querySelectorAll('.evo-runner-checkbox:checked');
+            const selectedRunners = Array.from(checkboxes).map(cb => cb.getAttribute('data-name'));
+
+            const emptyState = document.getElementById('evo-chart-empty');
+            if (selectedRunners.length === 0) {
+                emptyState.style.display = 'flex';
+                if (evolutionChart) {
+                    evolutionChart.destroy();
+                    evolutionChart = null;
+                }
+                return;
+            } else {
+                emptyState.style.display = 'none';
+            }
+
+            let runnerKeyLocal = detectedRunnerKey;
+            let genderKeyLocal = detectedGenderKey;
+            let dateKeyLocal = detectedDateKey;
+
+            if (isStrava) {
+                const keys = Object.keys(dataToUse[0] || {});
+                runnerKeyLocal = keys.find(k => k.toLowerCase().includes('nombre') && !k.toLowerCase().includes('prueba')) || 'Nombre, Apellidos';
+                genderKeyLocal = keys.find(k => k.toLowerCase().includes('sexo') || k.toLowerCase().includes('género') || k.toLowerCase().includes('genero')) || 'Sexo';
+                dateKeyLocal = keys.find(k => k.toLowerCase().includes('fecha') && !k.toLowerCase().includes('temporal')) || 'Fecha del Evento';
+            }
+
+            let filteredRows = [...dataToUse];
+            if (genderVal !== 'all' && genderKeyLocal) {
+                filteredRows = filteredRows.filter(row => {
+                    const val = String(row[genderKeyLocal] || '').toUpperCase();
+                    if (genderVal === 'H') {
+                        return val.startsWith('H') || val.startsWith('MASC') || val.startsWith('V');
+                    } else {
+                        return val.startsWith('M') && !val.startsWith('MASC') || val.startsWith('FEM') || val.startsWith('F');
+                    }
+                });
+            }
+
+            if (!isStrava) {
+                if (categoryVal === 'asfalto') {
+                    filteredRows = filteredRows.filter(row => {
+                        const type = (row['Tipo de Carrera'] || row['Tipo'] || '').toLowerCase();
+                        return type.includes('asfalto');
+                    });
+                } else if (categoryVal === 'trail') {
+                    filteredRows = filteredRows.filter(row => {
+                        const type = (row['Tipo de Carrera'] || row['Tipo'] || '').toLowerCase();
+                        return type.includes('montaña') || type.includes('trail') || type.includes('obstáculos');
+                    });
+                }
+            }
+
+            const dates = filteredRows.map(r => parseExcelDate(r[dateKeyLocal])).filter(d => !isNaN(d.getTime())).sort((a,b) => a-b);
+            if (dates.length === 0) {
+                emptyState.style.display = 'flex';
+                return;
+            }
+
+            let timelinePoints = [];
+            let timelineLabels = [];
+
+            if (isStrava) {
+                const dateMap = {};
+                filteredRows.forEach(item => {
+                    const dateVal = item[dateKeyLocal];
+                    if (!dateVal) return;
+                    let dateStr = "";
+                    if (dateVal instanceof Date) {
+                        dateStr = formatDateToYYYYMMDD(dateVal);
+                    } else {
+                        dateStr = String(dateVal).split('T')[0].trim();
+                    }
+                    if (dateStr) {
+                        dateMap[dateStr] = dateVal;
+                    }
+                });
+                const sortedWeeks = Object.keys(dateMap).sort();
+
+                if (timeVal === 'weekly') {
+                    timelinePoints = sortedWeeks.map(w => ({
+                        value: w,
+                        label: formatStravaDate(w),
+                        type: 'weekly'
+                    }));
+                } else {
+                    const monthMap = {};
+                    sortedWeeks.forEach(w => {
+                        const yyyymm = w.substring(0, 7);
+                        monthMap[yyyymm] = true;
+                    });
+                    const sortedMonths = Object.keys(monthMap).sort();
+                    const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+                    timelinePoints = sortedMonths.map(m => {
+                        const parts = m.split('-');
+                        const mIndex = parseInt(parts[1]) - 1;
+                        return {
+                            value: m,
+                            label: `${monthNames[mIndex]} ${parts[0].substring(2)}`,
+                            type: 'monthly'
+                        };
+                    });
+                }
+            } else {
+                if (timeVal === 'monthly') {
+                    let cur = new Date(dates[0].getFullYear(), dates[0].getMonth(), 1);
+                    const end = new Date(dates[dates.length - 1].getFullYear(), dates[dates.length - 1].getMonth(), 1);
+                    const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+                    
+                    while (cur <= end) {
+                        timelinePoints.push({
+                            value: { month: cur.getMonth(), year: cur.getFullYear() },
+                            label: `${monthNames[cur.getMonth()]} ${String(cur.getFullYear()).substring(2)}`,
+                            type: 'monthly'
+                        });
+                        cur.setMonth(cur.getMonth() + 1);
+                    }
+                } else {
+                    const raceMap = {};
+                    filteredRows.forEach(r => {
+                        const d = parseExcelDate(r[dateKeyLocal]);
+                        if (isNaN(d.getTime())) return;
+                        const raceName = r[detectedRaceKey] || 'Prueba sin nombre';
+                        const key = `${formatDateToYYYYMMDD(d)} - ${raceName}`;
+                        if (!raceMap[key]) {
+                            raceMap[key] = {
+                                date: d,
+                                name: raceName
+                            };
+                        }
+                    });
+                    const sortedRaces = Object.values(raceMap).sort((a, b) => a.date - b.date);
+                    timelinePoints = sortedRaces.map(r => ({
+                        value: r.date,
+                        label: r.name.length > 15 ? r.name.substring(0, 15) + '...' : r.name,
+                        fullLabel: r.name,
+                        type: 'race'
+                    }));
+                }
+            }
+
+            timelineLabels = timelinePoints.map(p => p.label);
+
+            const runnerRanks = {};
+            selectedRunners.forEach(name => {
+                runnerRanks[name] = [];
+            });
+
+            // Standings at the first point to map Y-axis names
+            const ptFirst = timelinePoints[0];
+            let firstRows = [];
+            if (isStrava) {
+                if (ptFirst.type === 'weekly') {
+                    firstRows = filteredRows.filter(r => {
+                        const d = r[dateKeyLocal];
+                        const dStr = d instanceof Date ? formatDateToYYYYMMDD(d) : String(d).split('T')[0].trim();
+                        return dStr && dStr <= ptFirst.value;
+                    });
+                } else {
+                    firstRows = filteredRows.filter(r => {
+                        const d = r[dateKeyLocal];
+                        const dStr = d instanceof Date ? formatDateToYYYYMMDD(d) : String(d).split('T')[0].trim();
+                        return dStr && dStr.substring(0, 7) <= ptFirst.value;
+                    });
+                }
+            } else {
+                if (ptFirst.type === 'monthly') {
+                    firstRows = filteredRows.filter(r => {
+                        const d = parseExcelDate(r[dateKeyLocal]);
+                        if (isNaN(d.getTime())) return false;
+                        return d.getFullYear() < ptFirst.value.year || (d.getFullYear() === ptFirst.value.year && d.getMonth() <= ptFirst.value.month);
+                    });
+                } else {
+                    firstRows = filteredRows.filter(r => {
+                        const d = parseExcelDate(r[dateKeyLocal]);
+                        if (isNaN(d.getTime())) return false;
+                        return d <= ptFirst.value;
+                    });
+                }
+            }
+
+            let firstStandings = [];
+            if (isStrava) {
+                firstStandings = calcStravaStandings(firstRows, categoryVal, runnerKeyLocal, dataToUse);
+            } else {
+                firstStandings = calcRank(firstRows, bonusMode);
+            }
+
+            const firstRankToName = {};
+            firstStandings.forEach((item, idx) => {
+                firstRankToName[idx + 1] = item.name;
+            });
+
+            // Standings at the last point to map Y-axis names on the right
+            const ptLast = timelinePoints[timelinePoints.length - 1];
+            let lastRows = [];
+            if (isStrava) {
+                if (ptLast.type === 'weekly') {
+                    lastRows = filteredRows.filter(r => {
+                        const d = r[dateKeyLocal];
+                        const dStr = d instanceof Date ? formatDateToYYYYMMDD(d) : String(d).split('T')[0].trim();
+                        return dStr && dStr <= ptLast.value;
+                    });
+                } else {
+                    lastRows = filteredRows.filter(r => {
+                        const d = r[dateKeyLocal];
+                        const dStr = d instanceof Date ? formatDateToYYYYMMDD(d) : String(d).split('T')[0].trim();
+                        return dStr && dStr.substring(0, 7) <= ptLast.value;
+                    });
+                }
+            } else {
+                if (ptLast.type === 'monthly') {
+                    lastRows = filteredRows.filter(r => {
+                        const d = parseExcelDate(r[dateKeyLocal]);
+                        if (isNaN(d.getTime())) return false;
+                        return d.getFullYear() < ptLast.value.year || (d.getFullYear() === ptLast.value.year && d.getMonth() <= ptLast.value.month);
+                    });
+                } else {
+                    lastRows = filteredRows.filter(r => {
+                        const d = parseExcelDate(r[dateKeyLocal]);
+                        if (isNaN(d.getTime())) return false;
+                        return d <= ptLast.value;
+                    });
+                }
+            }
+
+            let lastStandings = [];
+            if (isStrava) {
+                lastStandings = calcStravaStandings(lastRows, categoryVal, runnerKeyLocal, dataToUse);
+            } else {
+                lastStandings = calcRank(lastRows, bonusMode);
+            }
+
+            const lastRankToName = {};
+            lastStandings.forEach((item, idx) => {
+                lastRankToName[idx + 1] = item.name;
+            });
+
+            // Calculate ranks for each point
+            timelinePoints.forEach(pt => {
+                let rowsForPoint = [];
+                if (isStrava) {
+                    if (pt.type === 'weekly') {
+                        rowsForPoint = filteredRows.filter(r => {
+                            const d = r[dateKeyLocal];
+                            const dStr = d instanceof Date ? formatDateToYYYYMMDD(d) : String(d).split('T')[0].trim();
+                            return dStr && dStr <= pt.value;
+                        });
+                    } else {
+                        rowsForPoint = filteredRows.filter(r => {
+                            const d = r[dateKeyLocal];
+                            const dStr = d instanceof Date ? formatDateToYYYYMMDD(d) : String(d).split('T')[0].trim();
+                            return dStr && dStr.substring(0, 7) <= pt.value;
+                        });
+                    }
+                } else {
+                    if (pt.type === 'monthly') {
+                        rowsForPoint = filteredRows.filter(r => {
+                            const d = parseExcelDate(r[dateKeyLocal]);
+                            if (isNaN(d.getTime())) return false;
+                            return d.getFullYear() < pt.value.year || (d.getFullYear() === pt.value.year && d.getMonth() <= pt.value.month);
+                        });
+                    } else {
+                        rowsForPoint = filteredRows.filter(r => {
+                            const d = parseExcelDate(r[dateKeyLocal]);
+                            if (isNaN(d.getTime())) return false;
+                            return d <= pt.value;
+                        });
+                    }
+                }
+
+                let standings = [];
+                if (isStrava) {
+                    standings = calcStravaStandings(rowsForPoint, categoryVal, runnerKeyLocal, dataToUse);
+                } else {
+                    standings = calcRank(rowsForPoint, bonusMode);
+                }
+
+                const rankMap = {};
+                standings.forEach((item, idx) => {
+                    if (isStrava) {
+                        const val = categoryVal === 'distance' ? item.totalKm :
+                                    categoryVal === 'elevation' ? item.totalElevation :
+                                    categoryVal === 'runs' ? item.totalRuns : item.maxLongest;
+                        if (val > 0) {
+                            rankMap[item.name] = idx + 1;
+                        }
+                    } else {
+                        if (item.totalKm > 0 || item.totalScore > 0) {
+                            rankMap[item.name] = idx + 1;
+                        }
+                    }
+                });
+
+                selectedRunners.forEach(name => {
+                    runnerRanks[name].push(rankMap[name] !== undefined ? rankMap[name] : null);
+                });
+            });
+
+            // Find dynamic maxRank for Y axis limit
+            let maxRank = 10;
+            selectedRunners.forEach(name => {
+                const ranks = runnerRanks[name];
+                ranks.forEach(r => {
+                    if (r !== null && r > maxRank) {
+                        maxRank = r;
+                    }
+                });
+            });
+
+            // Build datasets for Chart.js
+            const datasets = selectedRunners.map(name => {
+                const color = runnerColors[name].normal;
+                return {
+                    label: name,
+                    data: runnerRanks[name],
+                    borderColor: color,
+                    backgroundColor: color,
+                    borderWidth: 3,
+                    tension: 0.15,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    fill: false,
+                    spanGaps: true
+                };
+            });
+
+            const ctx = document.getElementById('evolutionChartCanvas').getContext('2d');
+            if (evolutionChart) {
+                evolutionChart.destroy();
+            }
+
+            const tooltipCallbacks = {
+                label: function(context) {
+                    const name = context.dataset.label;
+                    const rank = context.raw;
+                    if (rank === null) {
+                        return `${name}: Sin participaciones`;
+                    }
+                    return `${name}: Puesto ${rank}º`;
+                }
+            };
+            
+            if (!isStrava && timelinePoints[0] && timelinePoints[0].type === 'race') {
+                tooltipCallbacks.title = function(context) {
+                    const idx = context[0].dataIndex;
+                    return timelinePoints[idx] ? timelinePoints[idx].fullLabel : '';
+                };
+            }
+
+            const config = {
+                type: 'line',
+                data: {
+                    labels: timelineLabels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: tooltipCallbacks
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#e2e8f0',
+                                font: {
+                                    family: 'Outfit, Arial, sans-serif',
+                                    weight: 'bold',
+                                    size: 10
+                                }
+                            }
+                        },
+                        y: {
+                            reverse: true,
+                            min: 1,
+                            max: maxRank,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#ffffff',
+                                autoSkip: false,
+                                stepSize: 1,
+                                precision: 0,
+                                font: {
+                                    family: 'Outfit, Arial, sans-serif',
+                                    weight: 'bold',
+                                    size: 10
+                                },
+                                callback: function(value) {
+                                    const name = firstRankToName[value];
+                                    if (name && selectedRunners.includes(name)) {
+                                        return name;
+                                    }
+                                    return "";
+                                }
+                            }
+                        },
+                        yRight: {
+                            position: 'right',
+                            reverse: true,
+                            min: 1,
+                            max: maxRank,
+                            grid: {
+                                drawOnChartArea: false,
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#ffffff',
+                                autoSkip: false,
+                                stepSize: 1,
+                                precision: 0,
+                                font: {
+                                    family: 'Outfit, Arial, sans-serif',
+                                    weight: 'bold',
+                                    size: 10
+                                },
+                                callback: function(value) {
+                                    return `${value}º`;
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            evolutionChart = new Chart(ctx, config);
+        }
+
         // Initial render is now handled in DOMContentLoaded
     </script>
     <script>
