@@ -18,18 +18,21 @@ function doGet(e) {
         alert('Este marcador solo funciona en la página de clasificación de tu Club en Strava. Abre Strava, ve a tu Club y vuelve a hacer clic.');
         return;
     }
-    let table = null;
-    const tables = document.querySelectorAll('table');
-    for (const t of tables) {
-        const text = t.textContent.toLowerCase();
-        if ((text.includes('athlete') || text.includes('atleta') || text.includes('corredor') || text.includes('deportista')) && 
-            (text.includes('distance') || text.includes('distancia') || text.includes('km'))) {
-            table = t;
-            break;
+    let table = document.querySelector('.table-leaderboard') || document.querySelector('.leaderboard table');
+    if (!table) {
+        const tables = document.querySelectorAll('table');
+        for (const t of tables) {
+            const text = t.textContent.toLowerCase();
+            if ((text.includes('athlete') || text.includes('atleta') || text.includes('corredor') || text.includes('deportista')) && 
+                (text.includes('distance') || text.includes('distancia') || text.includes('km')) &&
+                (text.includes('carreras') || text.includes('runs') || text.includes('actividades') || text.includes('activities'))) {
+                table = t;
+                break;
+            }
         }
     }
     if (!table) {
-        table = document.querySelector('.leaderboard table') || document.querySelector('.table-leaderboard') || document.querySelector('table');
+        table = document.querySelector('table');
     }
     if (!table) {
         alert('No se encontró la tabla de clasificación. Asegúrate de estar en la página del club en Strava.');
@@ -189,7 +192,7 @@ function doPost(e) {
       const diff = now.getDate() - day + (day === 0 ? -6 : 1);
       const startOfWeek = new Date(now.setDate(diff));
       startOfWeek.setHours(0, 0, 0, 0);
-      const fechaLunesStr = startOfWeek.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+      const fechaLunesStr = Utilities.formatDate(startOfWeek, ss.getSpreadsheetTimeZone(), "yyyy-MM-dd"); // Formato YYYY-MM-DD
       
       const dataSheet = ss.getSheetByName(SHEET_DATOS_STRAVA);
       
