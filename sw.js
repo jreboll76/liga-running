@@ -1,4 +1,4 @@
-const CACHE_NAME = 'running-castello-v4';
+const CACHE_NAME = 'running-castello-v5';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
