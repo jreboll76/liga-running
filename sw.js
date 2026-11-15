@@ -1,4 +1,4 @@
-const CACHE_NAME = 'running-castello-v5';
+const CACHE_NAME = 'running-castello-v6';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -43,13 +43,13 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
         fetch(event.request)
             .then((res) => {
-                // Make copy/clone of response
-                const resClone = res.clone();
-                // Open cache
-                caches.open(CACHE_NAME).then((cache) => {
-                    // Add response to cache
-                    cache.put(event.request, resClone);
-                });
+                // Solo guardar en caché respuestas válidas (200 OK), nunca errores 404
+                if (res && res.status === 200 && event.request.method === 'GET') {
+                    const resClone = res.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, resClone);
+                    });
+                }
                 return res;
             })
             .catch(() => caches.match(event.request).then((res) => res))
